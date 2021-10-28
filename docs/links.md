@@ -24,6 +24,11 @@ Einbaubuchsen:
 https://www.pollin.de/p/modular-einbaubuchse-mit-anschlusslitzen-6p6c-541843
 
 
+
+Analog Input Arduino Beispiel:
+https://www.arduino.cc/en/Tutorial/BuiltInExamples/AnalogInput
+
+
 Andere Links:
 
 https://www.blog.berrybase.de/blog/2020/09/03/so-baust-du-dir-deine-eigene-wetterstation/
