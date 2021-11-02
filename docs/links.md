@@ -29,6 +29,10 @@ Analog Input Arduino Beispiel:
 https://www.arduino.cc/en/Tutorial/BuiltInExamples/AnalogInput
 
 
+MicroMod Weather Schmeatics, Herstellerseitige Implementierung:
+https://cdn.sparkfun.com/assets/6/c/2/e/2/MicroMod_Weather_CB-Schematic.pdf
+
+
 Andere Links:
 
 https://www.blog.berrybase.de/blog/2020/09/03/so-baust-du-dir-deine-eigene-wetterstation/
