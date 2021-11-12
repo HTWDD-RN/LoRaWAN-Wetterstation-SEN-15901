@@ -1,5 +1,6 @@
 #define SPEED_PER_CLICK 2.4     //km/h
-#define RAIN_PER_CLICK  0.2794   //mm
+#define RAIN_PER_CLICK  0.2794  //mm - 1.54 ml water
+// 1mm - 5.5 ml
 
 int speedPin = 2;
 int rainPin = 3;
