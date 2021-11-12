@@ -12,6 +12,9 @@ https://www.berrybase.de/sensoren-module/feuchtigkeit/wettermessger-228-t-kit-f-
 
 
 Wetterstation Datenblatt:
+https://cdn.sparkfun.com/assets/d/1/e/0/6/DS-15901-Weather_Meter.pdf
+
+Wetterstation Datenblatt (Updated):
 https://cdn.sparkfun.com/assets/8/4/c/d/6/Weather_Sensor_Assembly_Updated.pdf
 
 
