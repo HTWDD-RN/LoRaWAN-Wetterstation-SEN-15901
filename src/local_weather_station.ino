@@ -5,7 +5,8 @@
 int speedPin = 2;
 int rainPin = 3;
 
-volatile int speedCount, rainCount = 0;      // variable to store the read value - volatile to push the update through
+volatile int speedCount = 0;
+volatile int rainCount = 0;      // variable to store the read value - volatile to push the update through
 
 static unsigned long last_interrupt_time_speed = 0;
 static unsigned long last_interrupt_time_rain = 0;
@@ -50,7 +51,7 @@ void incrementRain() {
   interrupt_time_rain = millis();
 
   //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
-  if (interrupt_time_rain - last_interrupt_time_rain > 10) {  //min time between readings - TODO maybe change value
+  if (interrupt_time_rain - last_interrupt_time_rain > 100) { // max 27 clicks per 10 seconds => 370 ms between readings
     rainCount++;
   }
   last_interrupt_time_rain = interrupt_time_rain;
