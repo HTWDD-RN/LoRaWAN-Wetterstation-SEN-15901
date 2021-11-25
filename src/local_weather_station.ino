@@ -4,8 +4,12 @@
 #define RAIN_PER_CLICK  0.2794  //mm - 1.54 ml water
 // 1mm - 5.5 ml
 
-int speedPin = 2;
-int rainPin = 3;
+// #define SPEED_PIN PCINT20 // pin 4
+// #define RAIN_PIN PCINT21 // pin 5
+
+#define SPEED_PIN 4
+#define RAIN_PIN 3
+
 int windVanePin = A0;
 int directionIndex = 0;
 float windVaneVoltage = 0.0;
@@ -46,11 +50,17 @@ unsigned long interrupt_time_rain = 0;
 unsigned int maxDirectionsIndex = (sizeof (directions) / sizeof (directions[0]));
 
 void setup() {
-  pinMode(speedPin, INPUT_PULLUP);
-  pinMode(rainPin, INPUT_PULLUP);
+  // init speed pin for interrupt
+  PCMSK2 |= bit (SPEED_PIN); // pin 4 
+  //PCMSK2 |= bit (RAIN_PIN); // pin 5
+  PCIFR |= bit (PCIF2);    // clear any outstanding interrupt
+  PCICR |= bit (PCIE2);    // enable interrupt for PCINT20 (D0 to D7)
 
-  attachInterrupt(digitalPinToInterrupt(speedPin), incrementSpeed, RISING);
-  attachInterrupt(digitalPinToInterrupt(rainPin), incrementRain, RISING);      
+  pinMode(SPEED_PIN, INPUT_PULLUP);
+  pinMode(RAIN_PIN, INPUT_PULLUP);
+
+  //attachInterrupt(digitalPinToInterrupt(speedPin), incrementSpeed, RISING);
+  attachInterrupt(digitalPinToInterrupt(RAIN_PIN), incrementRain, RISING);      
 
   Serial.begin(9600);       //initialize serial monitoring
 }
@@ -94,14 +104,26 @@ void loop() {
 }
 
 //two functions needed as the ISR are not allowed to use input parameters
-void incrementSpeed() {
-  interrupt_time_speed = millis();
+// void incrementSpeed() {
+//   interrupt_time_speed = millis();
 
-  //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
-  if (interrupt_time_speed - last_interrupt_time_speed > 10) {  //min time between readings - TODO maybe change value
-    speedCount++;
+//   //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
+//   if (interrupt_time_speed - last_interrupt_time_speed > 10) {  //min time between readings - TODO maybe change value
+//     speedCount++;
+//   }
+//   last_interrupt_time_speed = interrupt_time_speed;
+// }
+
+ISR (PCINT2_vect) {
+  if (PIND & (1 << SPEED_PIN)) {
+    interrupt_time_speed = millis();
+
+    //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
+    if (interrupt_time_speed - last_interrupt_time_speed > 10) {  //min time between readings - TODO maybe change value
+      speedCount++;
+    }
+    last_interrupt_time_speed = interrupt_time_speed;
   }
-  last_interrupt_time_speed = interrupt_time_speed;
 }
 
 void incrementRain() {
