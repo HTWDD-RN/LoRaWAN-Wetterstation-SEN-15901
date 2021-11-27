@@ -53,7 +53,7 @@ sudo chmod a+rw /dev/ttyUSB0
 1. LaTeX-Pakete installieren:
 
 ```
-sudo apt install texlive texlive-lang-german latexmk
+sudo apt install texlive texlive-lang-german texlive-latex-extra latexmk
 ```
 
 2. VSCode Extension `james-yu.latex-workshop` installieren
