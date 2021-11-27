@@ -1,6 +1,7 @@
-# Einrichtung der Arduino IDE
+# Environment
+## Arduino IDE
 
-## Ubuntu 21.04
+### Ubuntu 21.04
 
 1. Arduino IDE herunterladen (https://www.arduino.cc/en/donate/)
 
@@ -14,13 +15,13 @@
 
 6. Um die Funktionalität zu testen, ein Testskript ausführen: Datei->Beispiele->01 Basics->Blink, dann "Hochladen" drücken. Die "L" LED (PIN 13) sollte aufblinken.
 
-## VSCode Extenstion
+### VSCode Extenstion
 
-1. Installation von `vsciot-vscode.vscode-arduino` Microsoft Extension für VSCode in der Version 0.4.5
+1. Installation von `vsciot-vscode.vscode-arduino` Microsoft Extension
 
 2. In den VSCode Einstellungen folgende Zeilen hinzufügen (Pfad zum arduino binary Verzeichnis ggf. ändern):
 
-```
+```json
 "arduino.path": "/usr/local/bin/arduino/arduino-1.8.16",
 "arduino.logLevel": "info",
 "arduino.enableUSBDetection": true,
