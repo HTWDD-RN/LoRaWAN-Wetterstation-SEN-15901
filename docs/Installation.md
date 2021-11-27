@@ -47,3 +47,15 @@ sudo chmod a+rw /dev/ttyUSB0
 6. Arduino anschließen
 
 7. Board auf `Arduino Uno` einstellen, Programmer auf `avrispmkii` einstellen, Port auf `/dev/ttyUSB0 einstellen`
+
+## LaTeX in VSCode
+
+1. LaTeX-Pakete installieren:
+
+```
+sudo apt install texlive texlive-lang-german latexmk
+```
+
+2. VSCode Extension `james-yu.latex-workshop` installieren
+
+3. Gegebenenfalls VSCode neustarten
