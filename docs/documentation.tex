@@ -1,0 +1,99 @@
+\documentclass{article}
+
+\usepackage{german}
+\usepackage{hyperref}
+\usepackage{amsmath}
+
+
+\title{Projektseminar LoRa \\ \large Anbindung einer Wetterstation an das LoRaWAN}
+\date{\today}
+\author{
+  Lenny Reitz\\
+  \and
+  Raphael Rezaii-Djafari\\
+}
+
+\begin{document}
+  \maketitle
+  \newpage
+  \tableofcontents
+  \newpage
+
+  \section{Einleitung}
+
+    Das Projekt wurde im Laufe des Projektseminars 2021 von Lenny Reitz und Raphael Rezaii-Djafari unter der Führung von Professor Jörg Vogt an der HTW Dresden entwickelt.
+
+    \subsection{LoRa \& LoRaWAN}
+
+    \subsection{Problemstellung}
+
+    \subsection{Umsetzung}
+
+
+  \section{Einrichtung}
+
+    \subsection{Hardware}
+
+      \begin{itemize}
+        \item\href{https://learn.sparkfun.com/tutorials/weather-meter-hookup-guide#resources-and-going-further}{Wettermessgerät-Kit} SEN-15901
+        
+        \begin{itemize}
+          \item beinhaltet Regenmesser, Anemometer, Windfahne
+        \end{itemize}
+
+        \item Breadboard
+        \item Jumper-Kabel
+        \item 10 kOhm Widerstand
+        \item 2 \href{https://www.pollin.de/p/modular-einbaubuchse-mit-anschlusslitzen-6p6c-541843}{Modular-Einbaubuchsen mit Anschlusslitzen, 6P6C}
+        \item Arduino Uno
+        \item \href{https://wiki.dragino.com/index.php?title=Lora_Shield}{Dragino Lora Shield v1.4}
+      \end{itemize}
+
+      \subsubsection{Aufbau}
+
+    \subsection{Software}
+
+      \subsubsection{Libraries}
+    
+      TODO - LoRa Library
+
+  \section{Funktionsweise}
+
+    \subsection{LoRa}
+
+    \subsection{Sensoren der Wetterstation}
+
+      \subsubsection{Regenmesser}
+
+        Der Regenmesser besteht aus einem Auffangbehälter und einem darin befindlichen einfachen Kippschalter.
+        Wenn sich genügend Wasser im Behälter gesammelt hat, kippt der Schalter um und das Wasser läuft wieder aus dem Behälter heraus.
+        Ein Kippvorgang entspricht einer Wassermenge von 0,2794 mm.
+        Die folgende Umrechung ergibt die Wassermenge in Milliliter bei einer Auffangfläche von 55 cm²:
+
+        \begin{multline}
+          1\,mm = 1\,l/m^2 \quad \text{(Niederschlag)} \\
+          \Rightarrow 0.2794\,mm = 0.2794\,l/m^2 = 0.02794\,ml/cm^2 \\
+          \Rightarrow 0.02794\,ml/cm^2 * 55\,cm^2 \approx 1.54\,ml
+        \end{multline}
+
+        Ein Kippen beträgt also im Idealfall 1,54 ml. Mehrere Testläufe haben aber gezeigt, dass der Regenmesser mit einer relativ großer Ungenauigkeit schaltet.
+        Je nach dem, wie schnell das Wasser einfließt, variiert die Messgenauigkeit stark.
+
+      \subsubsection{Anemometer}
+
+        Das Schalenanemometer misst Windgeschwindigkeiten durch Schließen des Kontaktes eines Schalters durch einen Magneten.
+        Eine Windgeschwindigkeit von 2.4 km/h schließt den Schalter einmal pro Sekunde.
+
+        Eine Umdrehung entspricht 3 Schaltvorgängen.
+
+      \subsubsection{Windfahne}
+
+        Die Windfahne besitzt 8 Schalter, welche jeweils mit unterschiedlich großen Widerständen verbunden sind.
+        Die Schalter könne einzeln oder in Paaren umgelegt werden, wodurch sich 16 mögliche Positionen bestimmen lassen.
+
+        Durch einen externen Widerstand wird ein Spannungsteiler implementiert, der eine messbare Spannung ausgibt.
+        Daher lässt sich die Windrichtung nur durch ein analoges Signal bestimmen.
+
+    \subsection{Beispielablauf}
+
+\end{document}
