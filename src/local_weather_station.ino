@@ -40,6 +40,13 @@ volatile bool speedRead = false;
 volatile int speedCount = 0;
 volatile int rainCount = 0;      // variable to store the read value - volatile to push the update through
 
+// variables that should be set once per second thus during packet creation / serial print we will not use changing values
+volatile bool valuesRead = false;
+volatile int speedCountSec = 0;
+volatile int rainCountSec = 0;
+
+unsigned int counterStart = 3036;
+
 static unsigned long last_interrupt_time_speed = 0;
 static unsigned long last_interrupt_time_rain = 0;
 unsigned long interrupt_time_speed = 0;
@@ -50,6 +57,7 @@ void setup() {
 
   cli(); // disable all interrupts
   
+  // init digital pins
   PCICR |= (1 << PCIE2);    // enable interrupt for PCINT20 (D0 to D7)
 
   PCMSK2 |= (1 << SPEED_PIN); // set digital pin 4 
@@ -58,59 +66,86 @@ void setup() {
   pinMode(SPEED_PIN, INPUT_PULLUP);
   pinMode(RAIN_PIN, INPUT_PULLUP);
 
+  // init timer
+  TCCR1A = 0x00;
+  TCCR1B = (1 << CS12); // prescaler = 256; alternative: 1024 (set CS12 and CS10)
+  TIMSK1 = (1 << TOIE1); // interrupt when TCNT1 is overflowed
+  TCNT1 = counterStart;
+
   sei(); // enable interrupts     
 
   Serial.begin(9600);       //initialize serial monitoring
 }
 
+
 void loop() {
-  delay(1000);  //allow the counters to be filled before reading them
-
-  windVaneVoltage = analogRead(windVanePin) * (5.0 / 1023);
-
   
-  //search the sorted array - break if we find a higher value or found the last one
-  for (directionIndex = 0; directionIndex < maxDirectionsIndex - 1; directionIndex++) {
-    if (windVaneVoltage <= directions[directionIndex].voltage) {
-      break;
+  // busy wait - is ok since all the interrupts have a higher priority and are not blocked
+  // also mutex libraries cannot be included
+  // the following block should not take more than 1s
+  if (valuesRead) {
+    valuesRead = false;
+
+    windVaneVoltage = analogRead(windVanePin) * (5.0 / 1023);
+
+    
+    //search the sorted array - break if we find a higher value or found the last one
+    for (directionIndex = 0; directionIndex < maxDirectionsIndex - 1; directionIndex++) {
+      if (windVaneVoltage <= directions[directionIndex].voltage) {
+        break;
+      }
     }
+
+    // which direction is closer to windVaneVoltage?
+    if (directionIndex != 0) {
+      if ((directions[directionIndex].voltage - windVaneVoltage) > (windVaneVoltage - directions[directionIndex - 1].voltage)) {
+        directionIndex--;
+      } 
+    }
+
+    Serial.print("Wind Direction: U = ");
+    Serial.print(windVaneVoltage);
+    Serial.print(" V, ");
+    Serial.print(directions[directionIndex].angle);
+    Serial.print(" °, ");
+    Serial.print(directions[directionIndex].direction);
+    Serial.print(" ; Speed: ");
+    Serial.print(speedCountSec * SPEED_PER_CLICK);
+    Serial.print("km/h ; Rain: ");
+    Serial.print(rainCountSec * RAIN_PER_CLICK);
+    Serial.println("mm");
+    
+    // Serial.print("PIND: ");
+    // Serial.println(PIND, BIN);
+
+    // Serial.print("PIN D4: ");
+    // // beacuse of the pullup we have to check if the pin is low, to know if it was triggered
+    // Serial.println((PIND & (1 << SPEED_PIN)) == 0, BIN);
+
+    // Serial.print("PIN D5: ");
+    // Serial.println((PIND & (1 << RAIN_PIN)) == 0, BIN);
   }
-
-  // which direction is closer to windVaneVoltage?
-  if (directionIndex != 0) {
-    if ((directions[directionIndex].voltage - windVaneVoltage) > (windVaneVoltage - directions[directionIndex - 1].voltage)) {
-      directionIndex--;
-    } 
-  }
-
-  Serial.print("Wind Direction: U = ");
-  Serial.print(windVaneVoltage);
-  Serial.print(" V, ");
-  Serial.print(directions[directionIndex].angle);
-  Serial.print(" °, ");
-  Serial.print(directions[directionIndex].direction);
-  Serial.print(" ; Speed: ");
-  Serial.print(speedCount * SPEED_PER_CLICK);
-  Serial.print("km/h ; Rain: ");
-  Serial.print(rainCount * RAIN_PER_CLICK);
-  Serial.println("mm");
-  
-  // Serial.print("PIND: ");
-  // Serial.println(PIND, BIN);
-
-  // Serial.print("PIN D4: ");
-  // // beacuse of the pullup we have to check if the pin is low, to know if it was triggered
-  // Serial.println((PIND & (1 << SPEED_PIN)) == 0, BIN);
-
-  // Serial.print("PIN D5: ");
-  // Serial.println((PIND & (1 << RAIN_PIN)) == 0, BIN);
-
-  speedCount = 0;
-  rainCount = 0;
-
-  
 }
 
+// loop every second
+ISR (TIMER1_OVF_vect) {
+  TCNT1 = counterStart; // adjust register value for 1 second overflow
+
+  // read current values into Sec variables for asyn output in loop
+  rainCountSec = rainCount;
+  speedCountSec = speedCount;
+
+  // reset
+  // lost update is possible, if the pin change interrupt interrupt this interrupt (pin change has higher priority)
+  // thus some counts may get lost, however the reset  itself cannot be lost - lower priority - which is what we want
+  rainCount = 0;
+  speedCount = 0;
+  
+  valuesRead = true;  //enable loop to enter
+}
+
+
+// handle digital interrupts (rain meter and anemometer)
 ISR (PCINT2_vect) {
 
   // Serial.print("PIND: ");
