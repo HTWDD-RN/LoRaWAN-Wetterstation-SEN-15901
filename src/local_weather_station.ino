@@ -139,9 +139,8 @@ ISR (PCINT2_vect) {
     //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
     if (interrupt_time_speed - last_interrupt_time_speed > 10) {  //min time between readings - TODO maybe change value
       speedCount++;
+      last_interrupt_time_speed = interrupt_time_speed;
     }
-
-    last_interrupt_time_speed = interrupt_time_speed;
 
     speedRead = true;
   }
@@ -153,8 +152,7 @@ ISR (PCINT2_vect) {
     //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
     if (interrupt_time_rain - last_interrupt_time_rain > 100) { // max 27 clicks per 10 seconds => 370 ms between readings
       rainCount++;
+      last_interrupt_time_rain = interrupt_time_rain;
     }
-
-    last_interrupt_time_rain = interrupt_time_rain;
   }
 }
