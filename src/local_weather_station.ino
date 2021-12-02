@@ -5,7 +5,7 @@
 // 1mm - 5.5 ml
 
 #define SPEED_PIN PCINT20 // pin 4
-#define RAIN_PIN PCINT21 // pin 5
+#define RAIN_PIN PCINT21  // pin 5
 
 int windVanePin = A0;
 int directionIndex = 0;
@@ -36,7 +36,7 @@ windDirection directions[] = {
   { 4.62, 270.0,   "W" },
 };
 
-
+volatile bool speedRead = false;
 volatile int speedCount = 0;
 volatile int rainCount = 0;      // variable to store the read value - volatile to push the update through
 
@@ -49,7 +49,7 @@ unsigned int maxDirectionsIndex = (sizeof (directions) / sizeof (directions[0]))
 void setup() {
 
   cli(); // disable all interrupts
-
+  
   PCICR |= (1 << PCIE2);    // enable interrupt for PCINT20 (D0 to D7)
 
   PCMSK2 |= (1 << SPEED_PIN); // set digital pin 4 
@@ -95,13 +95,45 @@ void loop() {
   Serial.print(rainCount * RAIN_PER_CLICK);
   Serial.println("mm");
   
+  // Serial.print("PIND: ");
+  // Serial.println(PIND, BIN);
+
+  // Serial.print("PIN D4: ");
+  // // beacuse of the pullup we have to check if the pin is low, to know if it was triggered
+  // Serial.println((PIND & (1 << SPEED_PIN)) == 0, BIN);
+
+  // Serial.print("PIN D5: ");
+  // Serial.println((PIND & (1 << RAIN_PIN)) == 0, BIN);
 
   speedCount = 0;
   rainCount = 0;
+
+  
 }
 
 ISR (PCINT2_vect) {
-  if ((PIND & (1 << SPEED_PIN)) == 0) {
+
+  // Serial.print("PIND: ");
+  // Serial.println(PIND, BIN);
+
+  // Serial.print("PIN D4: ");
+  // // because of the pullup we have to check if the pin is low, to know if it was triggered
+  // Serial.println((PIND & (1 << SPEED_PIN)) == 0, BIN);
+
+  // Serial.print("PIN D5: ");
+  // Serial.println((PIND & (1 << RAIN_PIN)) == 0, BIN);
+
+  // if the switch in anemometer remains in closed position, the D4 pin is always high (anemometer does not move)
+  // problem: if the rain sensor is triggered, while D4 (speed pin) is constantly high, speedCount and rainCount would be incremented, but anemometer did not move
+  // solution: after the anemometer triggered an interrupt, lock the ISR for speed updates, until the pin state changes to low
+  // then, unlock the ISR for speed updates, when the pin state changes to high
+
+  if ((PIND & (1 << SPEED_PIN)) != 0) { // speed pin released (D4 = 0)
+    speedRead = false;
+  }
+
+
+  if (((PIND & (1 << SPEED_PIN)) == 0) && !speedRead) { // speed pin pressed (D4 = 1)
     interrupt_time_speed = millis();
 
     //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
@@ -110,6 +142,8 @@ ISR (PCINT2_vect) {
     }
 
     last_interrupt_time_speed = interrupt_time_speed;
+
+    speedRead = true;
   }
 
 
