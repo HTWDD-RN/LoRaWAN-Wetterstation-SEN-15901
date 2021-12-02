@@ -4,11 +4,8 @@
 #define RAIN_PER_CLICK  0.2794  //mm - 1.54 ml water
 // 1mm - 5.5 ml
 
-// #define SPEED_PIN PCINT20 // pin 4
-// #define RAIN_PIN PCINT21 // pin 5
-
-#define SPEED_PIN 4
-#define RAIN_PIN 5
+#define SPEED_PIN PCINT20 // pin 4
+#define RAIN_PIN PCINT21 // pin 5
 
 int windVanePin = A0;
 int directionIndex = 0;
@@ -53,8 +50,6 @@ void setup() {
 
   cli(); // disable all interrupts
 
-  // init speed pin for interrupt
-  //PCIFR |= bit (PCIF2);    // clear any outstanding interrupt
   PCICR |= (1 << PCIE2);    // enable interrupt for PCINT20 (D0 to D7)
 
   PCMSK2 |= (1 << SPEED_PIN); // set digital pin 4 
@@ -62,9 +57,6 @@ void setup() {
 
   pinMode(SPEED_PIN, INPUT_PULLUP);
   pinMode(RAIN_PIN, INPUT_PULLUP);
-
-  //attachInterrupt(digitalPinToInterrupt(speedPin), incrementSpeed, RISING);
-  //attachInterrupt(digitalPinToInterrupt(RAIN_PIN), incrementRain, RISING); 
 
   sei(); // enable interrupts     
 
@@ -91,63 +83,44 @@ void loop() {
     } 
   }
 
-  
-  // Serial.print("Wind Direction: U = ");
-  // Serial.print(windVaneVoltage);
-  // Serial.print(" V, ");
-  // Serial.print(directions[directionIndex].angle);
-  // Serial.print(" °, ");
-  // Serial.print(directions[directionIndex].direction);
-  // Serial.print(" ; Speed: ");
-  // Serial.print(speedCount * SPEED_PER_CLICK);
-  // Serial.print("km/h ; Rain: ");
-  // Serial.print(rainCount * RAIN_PER_CLICK);
-  // Serial.println("mm");
+  Serial.print("Wind Direction: U = ");
+  Serial.print(windVaneVoltage);
+  Serial.print(" V, ");
+  Serial.print(directions[directionIndex].angle);
+  Serial.print(" °, ");
+  Serial.print(directions[directionIndex].direction);
+  Serial.print(" ; Speed: ");
+  Serial.print(speedCount * SPEED_PER_CLICK);
+  Serial.print("km/h ; Rain: ");
+  Serial.print(rainCount * RAIN_PER_CLICK);
+  Serial.println("mm");
   
 
   speedCount = 0;
   rainCount = 0;
 }
 
-//two functions needed as the ISR are not allowed to use input parameters
-// void incrementSpeed() {
-//   interrupt_time_speed = millis();
-
-//   //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
-//   if (interrupt_time_speed - last_interrupt_time_speed > 10) {  //min time between readings - TODO maybe change value
-//     speedCount++;
-//   }
-//   last_interrupt_time_speed = interrupt_time_speed;
-// }
-
 ISR (PCINT2_vect) {
-  // if (PIND & (1 << SPEED_PIN)) {
-  //   interrupt_time_speed = millis();
+  if ((PIND & (1 << SPEED_PIN)) == 0) {
+    interrupt_time_speed = millis();
 
-  //   //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
-  //   if (interrupt_time_speed - last_interrupt_time_speed > 10) {  //min time between readings - TODO maybe change value
-  //     speedCount++;
-  //   }
-  //   last_interrupt_time_speed = interrupt_time_speed;
-  // }
+    //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
+    if (interrupt_time_speed - last_interrupt_time_speed > 10) {  //min time between readings - TODO maybe change value
+      speedCount++;
+    }
 
-  Serial.print("PIND: ");
-  Serial.println(PIND, BIN);
+    last_interrupt_time_speed = interrupt_time_speed;
+  }
 
-  Serial.print("PIN D4: ");
-  // beacuse of the pullup we have to check if the pin is low, to know if it was triggered
-  Serial.println((PIND & (1 << SPEED_PIN)) == 0, BIN);
 
-  Serial.print("PIN D5: ");
-  Serial.println((PIND & (1 << RAIN_PIN)) == 0, BIN);
+  if ((PIND & (1 << RAIN_PIN)) == 0) {
+    interrupt_time_rain = millis();
+
+    //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
+    if (interrupt_time_rain - last_interrupt_time_rain > 100) { // max 27 clicks per 10 seconds => 370 ms between readings
+      rainCount++;
+    }
+
+    last_interrupt_time_rain = interrupt_time_rain;
+  }
 }
-
-// void incrementRain() {
-//   interrupt_time_rain = millis();
-
-//   //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
-//   if (interrupt_time_rain - last_interrupt_time_rain > 100) { // max 27 clicks per 10 seconds => 370 ms between readings
-//     rainCount++;
-//   }
-//   last_interrupt_time_rain = interrupt_time_rain;
-// }
