@@ -141,6 +141,7 @@ void loop() {
 
     if (countSecPassed >= 10) {
       
+      // TODO: verify if this is working as intended
       // check for the most occured wind direction
       maxDirectionIndex = 0;
       for (directionIndex = 1; directionIndex < directionsLength; directionIndex++) {
@@ -152,7 +153,7 @@ void loop() {
 
       speedCount10Sec /= 10;
 
-
+      // TODO: check if it is possible to save the MSB of byte[2] - equals to 30 unused Bits -> 4 Byte unused
       // byte representation of measurement, that will be sent over lora
       /* [      0]  [      1]  [      2] */
       /* 0000 0000  0000 0000  0000 0000 */
@@ -173,10 +174,14 @@ void loop() {
       rainCount10Sec = 0;
       // reset the windDirection10Sec Array to 0
       memset(windDirection10Sec, 0, sizeof(windDirection10Sec));
-      
-      Serial.println(cache[count10SecPassed][0], BIN);
-      Serial.println(cache[count10SecPassed][1], BIN);
-      Serial.println(cache[count10SecPassed][2], BIN);
+
+
+      // Serial.println("");
+      // for (int i = 0; i < 30; i++) {
+      //   Serial.println(cache[i][0], BIN);
+      //   Serial.println(cache[i][1], BIN);
+      //   Serial.println(cache[i][2], BIN);
+      // }
 
       countSecPassed = 0;
       count10SecPassed++;
