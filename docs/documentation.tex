@@ -96,4 +96,68 @@
 
     \subsection{Beispielablauf}
 
+      Benötigte Payload Größe (pro Sekunde):
+
+      \begin{itemize}
+        \item Windfahne: 4 Bit (16 mögliche Windrichtungen)
+        \item Regenmesser: 2 Bit (maximal 4 Klicks pro Sekunde)
+        \item Anemometer: 7 Bit (maximal 128 Klicks pro Sekunde)
+      \end{itemize}
+
+      => 13 Bit Payload Größe (pro Sekunde)
+      Wenn wir 60 Messwerte pro Minute aufnehmen würden und dann pro Minute diese Daten an das TTN senden würden, bedeutet das:
+
+      \begin{itemize}
+        \item Payload Größe: 13 Bit * 60 = 780 Bit ~ 98 Byte (pro Minute)
+      \end{itemize}
+
+      Es muss eine Konfiguration für LoRa eingestellt werden, welche optimal für die zu sendende Paketgröße und Sendeinterval abgestimmt ist.
+
+      Laut https://www.thethingsnetwork.org/airtime-calculator ist die minimale Airtime für unsere Paketgröße und Sendeinterval:
+
+      \begin{itemize}
+        \item Paketgröße: 98 Byte
+        \item Spreading Factor: SF7
+        \item Region: EU868
+        \item Bandbreite: 250 kHz
+      \end{itemize}
+
+      => Airtime: 94,8 ms
+
+      Problem, weil die Fair Use Policy von TTN nur 30s Airtime pro Tag erlaubt. Wir sind allerdings mit 137s pro Tag weit darüber.
+
+      => Eine rohe Übermittlung der Daten mit einer Genaugikeit von 1s ist nicht möglich.
+
+      Schlussfolgerung: Die Rohdaten müssen gemittelt werden, um eine Übertragung innerhalb der 30s pro Tag zu einzuhalten.
+
+      
+      pro 5 Sekunden:
+
+      - Regenmesser: 3 Klicks * 5 Sekunden = 15 Klicks => 4 Bits
+      - Anemometer: Wert wird gemittelt => 7 Bits
+      - Windfahne: Wert wird gemittelt => 4 Bits
+
+      => Gesamt: 15 Bits pro 5 Sekunden
+
+      => Pro Minute: 180 Bits ~ 23 Byte
+
+
+      pro 10 Sekunden:
+
+      - Regenmesser: 3 Klicks * 10 Sekunden = 30 Klicks => 5 Bits
+      - Anemometer: Wert wird gemittelt => 7 Bits
+      - Anemometer: Maximalwert => 7 Bits
+      - Windfahne: Wert wird gemittelt => 4 Bits
+
+      => Gesamt: 23 Bits pro 10 Sekunden
+
+      => Pro Minute: 138 Bits ~ 18 Byte
+
+      => pro 5 Minuten: 690 Bits ~ 87 Byte
+
+      Das wäre eine mögliche Konfiguration mit einer Airtime von 87.2 ms pro 5 Minuten oder 25.1 s pro Tag
+      
+
+        
+
 \end{document}
