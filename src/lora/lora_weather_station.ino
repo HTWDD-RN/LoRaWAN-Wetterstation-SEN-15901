@@ -15,30 +15,29 @@ typedef struct WindDirection {
   float voltage;
   float angle;
   String direction;
-  int order;      //used for calculating the average in 10sec
 } windDirection;
 
 
-//TODO: problem with average, e,g half the time N other half NNW -> S or SSE instead of N or NNW
-//probably better to send the direction which occured the most
 windDirection directions[] = {
-  { 0.32, 112.5, "ESE",  5 },
-  { 0.41,  67.5, "ENE",  3 },
-  { 0.45,  90.0,   "E",  4 },
-  { 0.62, 157.5, "SSE",  7 },
-  {  0.9, 135.0,  "SE",  6 },
-  { 1.19, 202.5, "SSW",  9 },
-  {  1.4, 180.0,   "S",  8 },
-  { 1.98,  22.5, "NNE",  1 },
-  { 2.25,  45.0,  "NE",  2 },
-  { 2.93, 247.5, "WSW", 11 },
-  { 3.08, 225.0,  "SW", 10 },
-  { 3.43, 337.5, "NNW", 15 },
-  { 3.84,   0.0,   "N",  0 },
-  { 4.04, 292.5, "WNW", 13 },
-  { 4.33, 315.0,  "NW", 14 },
-  { 4.62, 270.0,   "W", 12 }
+  { 0.32, 112.5, "ESE" },
+  { 0.41,  67.5, "ENE" },
+  { 0.45,  90.0,   "E" },
+  { 0.62, 157.5, "SSE" },
+  {  0.9, 135.0,  "SE" },
+  { 1.19, 202.5, "SSW" },
+  {  1.4, 180.0,   "S" },
+  { 1.98,  22.5, "NNE" },
+  { 2.25,  45.0,  "NE" },
+  { 2.93, 247.5, "WSW" },
+  { 3.08, 225.0,  "SW" },
+  { 3.43, 337.5, "NNW" },
+  { 3.84,   0.0,   "N" },
+  { 4.04, 292.5, "WNW" },
+  { 4.33, 315.0,  "NW" },
+  { 4.62, 270.0,   "W" }
 };
+
+const unsigned int directionsLength = (sizeof directions / sizeof (windDirection));
 
 byte cache[30][3] = { 0 };
 
@@ -51,13 +50,17 @@ volatile bool valuesRead = false;
 volatile int speedCountSec = 0;
 volatile int rainCountSec = 0;
 
-//variables that will store the average of 10s of readings
+// variables that will store the average of 10s of readings
 int countSecPassed = 0;   //should not exceed 9
 int count10SecPassed = 0;
-int windDirection10Sec = 0;
 int speedCount10Sec = 0;
 int maxSpeedCount10Sec = 0;
 int rainCount10Sec = 0;
+int maxDirectionIndex = 0;
+
+// take track of the most occuring wind direction every 10 seconds in array
+int windDirection10Sec[directionsLength] = { 0 };
+
 
 unsigned int counterStart = 3036;
 
@@ -65,7 +68,6 @@ static unsigned long last_interrupt_time_speed = 0;
 static unsigned long last_interrupt_time_rain = 0;
 unsigned long interrupt_time_speed = 0;
 unsigned long interrupt_time_rain = 0;
-unsigned int maxDirectionsIndex = (sizeof (directions) / sizeof (directions[0]));
 
 void setup() {
 
@@ -104,7 +106,7 @@ void loop() {
 
     
     //search the sorted array - break if we find a higher value or found the last one
-    for (directionIndex = 0; directionIndex < maxDirectionsIndex - 1; directionIndex++) {
+    for (directionIndex = 0; directionIndex < directionsLength - 1; directionIndex++) {
       if (windVaneVoltage <= directions[directionIndex].voltage) {
         break;
       }
@@ -131,23 +133,33 @@ void loop() {
     
 
     //add to average for 10 sec
-    windDirection10Sec += directions[directionIndex].order;
+    windDirection10Sec[directionIndex]++;
     speedCount10Sec += speedCountSec;
     if (speedCountSec > maxSpeedCount10Sec) maxSpeedCount10Sec = speedCountSec;
     rainCount10Sec += rainCountSec;
     countSecPassed++;
 
-
     if (countSecPassed >= 10) {
-      windDirection10Sec /= 10;
+      
+      //check for the most occured wind direction
+      maxDirectionIndex = 0;
+      for (directionIndex = 1; directionIndex < directionsLength; directionIndex++) {
+        //if there are 2 wind directions that occured equally, just take the first one
+        if (windDirection10Sec[maxDirectionIndex] < windDirection10Sec[directionIndex]) {
+          maxDirectionIndex = directionIndex;
+        }
+      }
+
       speedCount10Sec /= 10;
 
-      /* [      0]  [      1]  [      2]*/
+
+      // byte representation of measurement, that will be sent over lora
+      /* [      0]  [      1]  [      2] */
       /* 0000 0000  0000 0000  0000 0000 */
       /* [WV] [..R..][..AN..]  0[.M_AN.] */
 
       // add current measurement to cache
-      cache[count10SecPassed][0] |= windDirection10Sec << 4;
+      cache[count10SecPassed][0] |= maxDirectionIndex << 4;
       cache[count10SecPassed][0] |= rainCount10Sec >> 1;
 
       cache[count10SecPassed][1] |= rainCount10Sec << 7;
@@ -156,10 +168,11 @@ void loop() {
       cache[count10SecPassed][2] |= maxSpeedCount10Sec;
 
       //reset
-      windDirection10Sec = 0;
       speedCount10Sec = 0;
       maxSpeedCount10Sec = 0;
       rainCount10Sec = 0;
+      // reset the windDirection10Sec Array to 0
+      memset(windDirection10Sec, 0, sizeof(windDirection10Sec));
       
       Serial.println(cache[count10SecPassed][0], BIN);
       Serial.println(cache[count10SecPassed][1], BIN);
