@@ -1,7 +1,7 @@
 #include <string.h>
 
-#define SPEED_PER_CLICK 2.4     //km/h
-#define RAIN_PER_CLICK  0.2794  //mm - 1.54 ml water
+#define SPEED_PER_CLICK 2.4     // km/h
+#define RAIN_PER_CLICK  0.2794  // mm - 1.54 ml water
 // 1mm - 5.5 ml
 
 #define SPEED_PIN PCINT20 // pin 4
@@ -51,7 +51,7 @@ volatile int speedCountSec = 0;
 volatile int rainCountSec = 0;
 
 // variables that will store the average of 10s of readings
-int countSecPassed = 0;   //should not exceed 9
+int countSecPassed = 0;   // maximum at 10
 int count10SecPassed = 0;
 int speedCount10Sec = 0;
 int maxSpeedCount10Sec = 0;
@@ -90,7 +90,7 @@ void setup() {
 
   sei(); // enable interrupts     
 
-  Serial.begin(9600);       //initialize serial monitoring
+  Serial.begin(9600); // initialize serial monitoring
 }
 
 
@@ -105,7 +105,7 @@ void loop() {
     windVaneVoltage = analogRead(windVanePin) * (5.0 / 1023);
 
     
-    //search the sorted array - break if we find a higher value or found the last one
+    // search the sorted array - break if we find a higher value or found the last one
     for (directionIndex = 0; directionIndex < directionsLength - 1; directionIndex++) {
       if (windVaneVoltage <= directions[directionIndex].voltage) {
         break;
@@ -132,7 +132,7 @@ void loop() {
     Serial.println("mm");
     
 
-    //add to average for 10 sec
+    // add to average for 10 sec
     windDirection10Sec[directionIndex]++;
     speedCount10Sec += speedCountSec;
     if (speedCountSec > maxSpeedCount10Sec) maxSpeedCount10Sec = speedCountSec;
@@ -141,10 +141,10 @@ void loop() {
 
     if (countSecPassed >= 10) {
       
-      //check for the most occured wind direction
+      // check for the most occured wind direction
       maxDirectionIndex = 0;
       for (directionIndex = 1; directionIndex < directionsLength; directionIndex++) {
-        //if there are 2 wind directions that occured equally, just take the first one
+        // if there are 2 wind directions that occured equally, just take the first one
         if (windDirection10Sec[maxDirectionIndex] < windDirection10Sec[directionIndex]) {
           maxDirectionIndex = directionIndex;
         }
@@ -167,7 +167,7 @@ void loop() {
 
       cache[count10SecPassed][2] |= maxSpeedCount10Sec;
 
-      //reset
+      // reset
       speedCount10Sec = 0;
       maxSpeedCount10Sec = 0;
       rainCount10Sec = 0;
@@ -182,9 +182,9 @@ void loop() {
       count10SecPassed++;
     }
     
-    //Send the LORA Packet
+    // Send the LORA Packet
     if (count10SecPassed >= 30) {
-      //TODO: send Lora Packet
+      // TODO: send Lora Packet
 
       count10SecPassed = 0;
 
@@ -208,7 +208,7 @@ ISR (TIMER1_OVF_vect) {
   rainCount = 0;
   speedCount = 0;
   
-  valuesRead = true;  //enable loop to enter
+  valuesRead = true; // enable loop to enter
 }
 
 
@@ -238,8 +238,8 @@ ISR (PCINT2_vect) {
   if (((PIND & (1 << SPEED_PIN)) == 0) && !speedRead) { // speed pin pressed (D4 = 1)
     interrupt_time_speed = millis();
 
-    //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
-    if (interrupt_time_speed - last_interrupt_time_speed > 10) {  //min time between readings - TODO maybe change value
+    // implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
+    if (interrupt_time_speed - last_interrupt_time_speed > 10) {  // min time between readings - TODO maybe change value
       speedCount++;
       last_interrupt_time_speed = interrupt_time_speed;
     }
@@ -251,7 +251,7 @@ ISR (PCINT2_vect) {
   if ((PIND & (1 << RAIN_PIN)) == 0) {
     interrupt_time_rain = millis();
 
-    //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
+    // implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
     if (interrupt_time_rain - last_interrupt_time_rain > 100) { // max 27 clicks per 10 seconds => 370 ms between readings
       rainCount++;
       last_interrupt_time_rain = interrupt_time_rain;
