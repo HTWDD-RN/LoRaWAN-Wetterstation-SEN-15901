@@ -146,6 +146,7 @@ void loop() {
       /* 0000 0000  0000 0000  0000 0000 */
       /* [WV] [..R..][..AN..]  0[.M_AN.] */
 
+      // add current measurement to cache
       cache[count10SecPassed][0] |= windDirection10Sec << 4;
       cache[count10SecPassed][0] |= rainCount10Sec >> 1;
 
@@ -154,15 +155,6 @@ void loop() {
 
       cache[count10SecPassed][2] |= maxSpeedCount10Sec;
 
-      //Add to packet
-      /*
-      std::bitset<4> windDirectionBitset(windDirection10Sec);
-      std::bitset<7> speedBitset(speedCount10Sec);
-      std::bitset<2> rainBitset(rainCount10Sec);
-      */
-
-      //cache[count10SecPassed] = std::bitset<13>((unsigned long) (windDirection10Sec << 9 | speedCount10Sec << 2 | rainCount10Sec));
-      
       //reset
       windDirection10Sec = 0;
       speedCount10Sec = 0;
@@ -186,20 +178,6 @@ void loop() {
       // reset cache
       memset(cache, 0, sizeof(cache));
     }
-
-
-
-
-
-    // Serial.print("PIND: ");
-    // Serial.println(PIND, BIN);
-
-    // Serial.print("PIN D4: ");
-    // // beacuse of the pullup we have to check if the pin is low, to know if it was triggered
-    // Serial.println((PIND & (1 << SPEED_PIN)) == 0, BIN);
-
-    // Serial.print("PIN D5: ");
-    // Serial.println((PIND & (1 << RAIN_PIN)) == 0, BIN);
   }
 }
 
