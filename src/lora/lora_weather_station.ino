@@ -1,4 +1,6 @@
-#include <string.h>
+#include "secret.h"
+#include "ttn_send.h"
+
 
 #define SPEED_PER_CLICK 2.4     // km/h
 #define RAIN_PER_CLICK  0.2794  // mm - 1.54 ml water
@@ -91,6 +93,8 @@ void setup() {
   sei(); // enable interrupts     
 
   Serial.begin(9600); // initialize serial monitoring
+
+  setupLoRa();
 }
 
 
@@ -188,8 +192,9 @@ void loop() {
     }
     
     // Send the LORA Packet
-    if (count10SecPassed >= 30) {
-      // TODO: send Lora Packet
+    if (count10SecPassed >= 10) { // TODO: reset to 30
+      
+      doSend();
 
       count10SecPassed = 0;
 
@@ -197,6 +202,8 @@ void loop() {
       memset(cache, 0, sizeof(cache));
     }
   }
+
+  loopLoRa();
 }
 
 // loop every second

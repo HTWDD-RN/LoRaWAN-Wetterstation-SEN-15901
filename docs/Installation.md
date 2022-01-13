@@ -15,7 +15,34 @@
 
 6. Um die Funktionalität zu testen, ein Testskript ausführen: Datei->Beispiele->01 Basics->Blink, dann "Hochladen" drücken. Die "L" LED (PIN 13) sollte aufblinken.
 
-### VSCode Extenstion
+## Bibliotheken einbinden
+1. Bibliothek `Arduino-LMIC` als ZIP herunterladen (https://github.com/dragino/arduino-lmic)
+
+2. In der Arduino-IDE: Sketch -> Bibliothek einbinden -> .ZIP-Bibliothek hinzufügen
+
+## Dragino konfigurieren <!-- TODO: mehr dokumentieren -->
+1. LoRaWAN
+    - Service Provider - The Things Network V3
+2. LoRa
+    - Frequency: 868100000
+    - Spreading Factor: SF7
+
+<!-- TODO: Gateway ID des Dragino muss als Gateway EUI im TTN eingetragen werden. Gateway ID im TTN beliebig-->
+
+## TTN
+1. Add application
+2. Add end device
+2.1 Manually
+2.1.1 Frequency Plan: Europe 863-870 MHz (SF9 for RX2 - recommended)
+2.1.2 LoRaWan version: MAC V1.0.4
+2.1.3 Regional Parameters version: PHY V1.1 REV A
+2.1.4 Show advanced activation !
+2.1.5 Activation mode: Activation by personalization (ABP)
+2.1.6 Device address, AppSKey, NwkSKey generieren und in Code einfügen
+2.1.7 Register end device
+
+
+## VSCode Extenstion
 
 1. Installation von `vsciot-vscode.vscode-arduino` Microsoft Extension
 
@@ -31,12 +58,6 @@
 3. Im Terminal Berechtigung für den USB Port `/dev/ttyUSB0` aktivieren:
 
 ```
-sudo usermod -a -G /dev/ttyUSB0 $USER
-```
-
-und ggf.:
-
-```
 sudo chmod a+rw /dev/ttyUSB0
 ```
 
@@ -48,7 +69,8 @@ sudo chmod a+rw /dev/ttyUSB0
 
 7. Board auf `Arduino Uno` einstellen, Programmer auf `avrispmkii` einstellen, Port auf `/dev/ttyUSB0 einstellen`
 
-## LaTeX in VSCode
+
+### LaTeX in VSCode
 
 1. LaTeX-Pakete installieren:
 
