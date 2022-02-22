@@ -12,6 +12,7 @@
 
 #include "ttn_send.h"
 #include "secret.h"
+#include "config.h"
 
 #include <string.h>
 #include <lmic.h>
@@ -29,7 +30,7 @@ void os_getDevEui (u1_t* buf) { }
 void os_getDevKey (u1_t* buf) { }
 
 static osjob_t sendjob;
-const unsigned TX_INTERVAL = 20;
+const unsigned TX_INTERVAL = 20; // TODO:
 
 const lmic_pinmap lmic_pins = {
     .nss = 10,
@@ -116,17 +117,33 @@ void setupLoRa() {
   #endif
 
   #if defined(CFG_eu868)
-    LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF12),  BAND_CENTI); // Change SF here!
-    for(int i = 1; i <= 8; i++) LMIC_disableChannel(i);
+    //LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF12),  BAND_CENTI); // Change SF here!
+
+    LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(1, 868300000, DR_RANGE_MAP(DR_SF12, DR_SF7B), BAND_CENTI);      // g-band
+    LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(3, 867100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(4, 867300000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(5, 867500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(6, 867700000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(7, 867900000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+    LMIC_setupChannel(8, 868800000, DR_RANGE_MAP(DR_FSK,  DR_FSK),  BAND_MILLI);      // g2-band
+
+    //for(int i = 1; i <= 8; i++) LMIC_disableChannel(i);
   #elif defined(CFG_us915)
+    // NA-US channels 0-71 are configured automatically
+    // but only one group of 8 should (a subband) should be active
+    // TTN recommends the second sub band, 1 in a zero based count.
+    // https://github.com/TheThingsNetwork/gateway-conf/blob/master/US-global_conf.json
+
     LMIC_selectSubBand(1);
   #endif
 
   LMIC_setLinkCheckMode(0);
-  LMIC.dn2Dr = DR_SF9;
-  LMIC_setDrTxpow(DR_SF12,14); // Change SF here!
+  LMIC.dn2Dr = DR_SF9; // downlink SF is fix, because TTN only uses SF9 for its RX2 window
+  LMIC_setDrTxpow(SPREADING_FACTOR, 14);
 
-  do_send(&sendjob);
+  //do_send(&sendjob);
 }
 
 void loopLoRa() {
