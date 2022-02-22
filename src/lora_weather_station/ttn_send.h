@@ -3,7 +3,7 @@
 
 typedef uint8_t byte;
 
-extern byte cache[RECORD_AMOUNT][3];
+extern byte cache[3 * RECORD_AMOUNT];
 
 void doSend();
 void setupLoRa();

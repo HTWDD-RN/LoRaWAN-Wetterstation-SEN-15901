@@ -30,7 +30,6 @@ void os_getDevEui (u1_t* buf) { }
 void os_getDevKey (u1_t* buf) { }
 
 static osjob_t sendjob;
-const unsigned TX_INTERVAL = 20; // TODO:
 
 const lmic_pinmap lmic_pins = {
     .nss = 10,
@@ -44,9 +43,7 @@ void do_send(osjob_t * j) {
     Serial.println(F("OP_TXRXPEND, not sending"));
   } 
   else {
-    // cast 2d array to unit8_t array
-    LMIC_setTxData2(1, (uint8_t*) cache, sizeof(cache), 0);
-    //LMIC_setTxData2(1, mydata, sizeof(mydata) -1, 0);
+    LMIC_setTxData2(1, cache, sizeof(cache), 0);
     Serial.println(F("Packet queued"));
   }
 }
@@ -76,7 +73,6 @@ void onEvent (ev_t ev) {
         Serial.print(LMIC.dataLen);
         Serial.println(F(" bytes of payload"));
       }
-      os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
       break;
     case EV_RXCOMPLETE:
       Serial.println(F("EV_RXCOMPLETE"));
@@ -117,8 +113,6 @@ void setupLoRa() {
   #endif
 
   #if defined(CFG_eu868)
-    //LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF12),  BAND_CENTI); // Change SF here!
-
     LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
     LMIC_setupChannel(1, 868300000, DR_RANGE_MAP(DR_SF12, DR_SF7B), BAND_CENTI);      // g-band
     LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
@@ -128,8 +122,6 @@ void setupLoRa() {
     LMIC_setupChannel(6, 867700000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
     LMIC_setupChannel(7, 867900000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
     LMIC_setupChannel(8, 868800000, DR_RANGE_MAP(DR_FSK,  DR_FSK),  BAND_MILLI);      // g2-band
-
-    //for(int i = 1; i <= 8; i++) LMIC_disableChannel(i);
   #elif defined(CFG_us915)
     // NA-US channels 0-71 are configured automatically
     // but only one group of 8 should (a subband) should be active
@@ -142,8 +134,6 @@ void setupLoRa() {
   LMIC_setLinkCheckMode(0);
   LMIC.dn2Dr = DR_SF9; // downlink SF is fix, because TTN only uses SF9 for its RX2 window
   LMIC_setDrTxpow(SPREADING_FACTOR, 14);
-
-  //do_send(&sendjob);
 }
 
 void loopLoRa() {

@@ -1,14 +1,11 @@
 #include "config.h"
-//#include "ttn_send.h"
+#include "ttn_send.h"
 
-
-#define SPEED_PER_CLICK 2.4     // km/h
-#define RAIN_PER_CLICK 0.2794   // mm = 1.54 ml water (1mm = 5.5 ml)
 
 #define SPEED_PIN PCINT20 // pin 4
 #define RAIN_PIN PCINT21  // pin 5
 
-byte cache[RECORD_AMOUNT][3] = { 0 }; 
+byte cache[3 * RECORD_AMOUNT] = { 0 }; 
 
 int windVanePin = A0;
 int directionIndex = 0;
@@ -71,7 +68,7 @@ void setup() {
 
   Serial.begin(9600); // initialize serial monitoring
 
-  //setupLoRa();
+  setupLoRa();
 }
 
 
@@ -124,16 +121,17 @@ void loop() {
 
       /* [      0]  [      1]  [      2] */ // byte count
       /* 0000 0000  0000 0000  0000 0000 */ // bit count
-      /* [WV] [..R..][..AN..]  0[.M_AN.] */ // value allocation - WV = windVaneDirectionIndex, R = rainAmount, AN = avgWindSpeed, M_AN = maxWindSpeed
+      /* [WV] [..R..][..AN..]  0[.M_AN.] */ // value allocation
+      // WV = windVaneDirectionIndex, R = rainAmount, AN = avgWindSpeed, M_AN = maxWindSpeed
 
       // add current record to cache
-      cache[recordCount][0] |= maxDirectionIndex << 4;
-      cache[recordCount][0] |= rainAmount >> 1;
+      cache[recordCount] |= maxDirectionIndex << 4;
+      cache[recordCount] |= rainAmount >> 1;
 
-      cache[recordCount][1] |= rainAmount << 7;
-      cache[recordCount][1] |= avgWindSpeedValue;
+      cache[recordCount + 1] |= rainAmount << 7;
+      cache[recordCount + 1] |= avgWindSpeedValue;
 
-      cache[recordCount][2] |= maxWindSpeedValue;
+      cache[recordCount + 2] |= maxWindSpeedValue;
 
       // reset
       avgWindSpeedValue = 0;
@@ -145,20 +143,18 @@ void loop() {
 
 
       Serial.println("");
-      for (int i = 0; i < RECORD_AMOUNT; i++) {
-        Serial.println(cache[i][0], BIN);
-        Serial.println(cache[i][1], BIN);
-        Serial.println(cache[i][2], BIN);
+      for (int i = 0; i < RECORD_AMOUNT * 3; i++) {
+        Serial.println(cache[i], BIN);
       }
 
       secCount = 0;
-      recordCount++;
+      recordCount += 3;
     }
     
     // send LoRa packet
-    if (recordCount >= RECORD_AMOUNT) {
+    if ((recordCount / 3) >= RECORD_AMOUNT) {
       
-      //doSend();
+      doSend();
 
       recordCount = 0;
 
@@ -167,7 +163,7 @@ void loop() {
     }
   }
 
-  //loopLoRa();
+  loopLoRa();
 }
 
 // loop every second
