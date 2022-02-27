@@ -20,14 +20,6 @@
 
 2. In der Arduino-IDE: Sketch -> Bibliothek einbinden -> .ZIP-Bibliothek hinzufügen
 
-## Dragino konfigurieren <!-- TODO: mehr dokumentieren -->
-1. LoRaWAN
-    - Service Provider - The Things Network V3
-2. LoRa
-    - Frequency: 868100000
-    - Spreading Factor: SF7
-
-<!-- TODO: Gateway ID des Dragino muss als Gateway EUI im TTN eingetragen werden. Gateway ID im TTN beliebig-->
 
 ## TTN
 1. Add application

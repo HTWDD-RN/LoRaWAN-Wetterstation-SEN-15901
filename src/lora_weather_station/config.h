@@ -33,8 +33,8 @@
 // NOTE: enter mode-specific secrets in secret.h
 // NOTE: the spreading factor will be automatically set when OTAA_MODE is activated
 
-// #define OTAA_MODE
-#define ABP_MODE
+#define OTAA_MODE
+//#define ABP_MODE
 
 
 
@@ -43,7 +43,7 @@
 
 // e.g. a value of 10 means the average of 10 seconds will create 1 record
 // minimum is 1 second
-#define RECORD_RESOLUTION 60
+#define RECORD_RESOLUTION 15*60
 
 
 
@@ -51,7 +51,7 @@
 // *******************************
 
 // 1 record = 3 bytes
-#define RECORD_AMOUNT 2
+#define RECORD_AMOUNT 4
 
 
 
