@@ -3,7 +3,7 @@
 
 ### Ubuntu 21.04
 
-1. Arduino IDE herunterladen (https://www.arduino.cc/en/donate/)
+1. Arduino IDE herunterladen (https://www.arduino.cc/en/software)
 
 2. Installationsanleitung folgen: https://ubuntu.com/tutorials/install-the-arduino-ide#2-installing-via-a-tarball
 
@@ -53,6 +53,7 @@
 "arduino.logLevel": "info",
 "arduino.enableUSBDetection": true,
 "C_Cpp.intelliSenseEngine": "Tag Parser"
+"arduino.defaultBaudRate": 9600
 ```
 
 3. Im Terminal Berechtigung für den USB Port `/dev/ttyUSB0` aktivieren:
