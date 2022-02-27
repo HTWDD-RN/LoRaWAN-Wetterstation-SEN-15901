@@ -19,15 +19,26 @@
 #include <hal/hal.h>
 #include <SPI.h>
 
+// check if ABP or OTAA should be used, OTAA is recommend
+// identification modes are defined in config.h
+#if defined(OTAA_MODE)
+  static const u1_t PROGMEM JOINEUI[8] = JOINEUI_SECRET;
+  static const u1_t PROGMEM DEVEUI[8] = DEVEUI_SECRET;
+  static const u1_t PROGMEM APPKEY[16] = APPKEY_SECRET;
 
-static const PROGMEM u1_t NWKSKEY[16] = NWKSKEY_SECRET;
-static const u1_t PROGMEM APPSKEY[16] = APPSKEY_SECRET;
-static const u4_t DEVADDR = DEVADDR_SECRET;
+  void os_getArtEui (u1_t* buf) { memcpy_P(buf, JOINEUI, 8); }
+  void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8); }
+  void os_getDevKey (u1_t* buf) { memcpy_P(buf, APPKEY, 16); }
 
+#elif defined(ABP_MODE)
+  static const PROGMEM u1_t NWKSKEY[16] = NWKSKEY_SECRET;
+  static const u1_t PROGMEM APPSKEY[16] = APPSKEY_SECRET;
+  static const u4_t DEVADDR = DEVADDR_SECRET;
 
-void os_getArtEui (u1_t* buf) { }
-void os_getDevEui (u1_t* buf) { }
-void os_getDevKey (u1_t* buf) { }
+  void os_getArtEui (u1_t* buf) { }
+  void os_getDevEui (u1_t* buf) { }
+  void os_getDevKey (u1_t* buf) { }
+#endif
 
 static osjob_t sendjob;
 
@@ -57,6 +68,13 @@ void onEvent (ev_t ev) {
       break;
     case EV_JOINED:
       Serial.println(F("EV_JOINED"));
+
+      #ifdef OTAA_MODE
+        // Disable link check validation (automatically enabled
+        // during join, but not supported by TTN at this time).
+        LMIC_setLinkCheckMode(0);
+      #endif
+
       break;
     case EV_JOIN_FAILED:
       Serial.println(F("EV_JOIN_FAILED"));
@@ -93,6 +111,14 @@ void doSend() {
 void setupLoRa() {
   Serial.begin(9600);
   Serial.println(F("Starting"));
+
+  // identification mode check
+  #if defined(OTAA_MODE)
+    Serial.println(F("OTAA mode"));
+  #elif defined(ABP_MODE)
+    Serial.println(F("ABP mode"));
+  #endif
+
   #ifdef VCC_ENABLE
     pinMode(VCC_ENABLE, OUTPUT);
     digitalWrite(VCC_ENABLE, HIGH);
@@ -102,38 +128,41 @@ void setupLoRa() {
   os_init();
   LMIC_reset();
 
-  #ifdef PROGMEM
-    uint8_t appskey[sizeof(APPSKEY)];
-    uint8_t nwkskey[sizeof(NWKSKEY)];
-    memcpy_P(appskey, APPSKEY, sizeof(APPSKEY));
-    memcpy_P(nwkskey, NWKSKEY, sizeof(NWKSKEY));
-    LMIC_setSession (0x1, DEVADDR, nwkskey, appskey);
-  #else
-    LMIC_setSession (0x1, DEVADDR, NWKSKEY, APPSKEY);
+  #ifdef ABP_MODE
+    #ifdef PROGMEM
+      uint8_t appskey[sizeof(APPSKEY)];
+      uint8_t nwkskey[sizeof(NWKSKEY)];
+      memcpy_P(appskey, APPSKEY, sizeof(APPSKEY));
+      memcpy_P(nwkskey, NWKSKEY, sizeof(NWKSKEY));
+      LMIC_setSession(0x1, DEVADDR, nwkskey, appskey);
+    #else
+      LMIC_setSession(0x1, DEVADDR, NWKSKEY, APPSKEY);
+    #endif
+  
+
+    #if defined(CFG_eu868)
+      LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+      LMIC_setupChannel(1, 868300000, DR_RANGE_MAP(DR_SF12, DR_SF7B), BAND_CENTI);      // g-band
+      LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+      LMIC_setupChannel(3, 867100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+      LMIC_setupChannel(4, 867300000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+      LMIC_setupChannel(5, 867500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+      LMIC_setupChannel(6, 867700000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+      LMIC_setupChannel(7, 867900000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
+      LMIC_setupChannel(8, 868800000, DR_RANGE_MAP(DR_FSK,  DR_FSK),  BAND_MILLI);      // g2-band
+    #elif defined(CFG_us915)
+      // NA-US channels 0-71 are configured automatically
+      // but only one group of 8 should (a subband) should be active
+      // TTN recommends the second sub band, 1 in a zero based count.
+      // https://github.com/TheThingsNetwork/gateway-conf/blob/master/US-global_conf.json
+
+      LMIC_selectSubBand(1);
+    #endif
+
+    LMIC_setLinkCheckMode(0);
+    LMIC.dn2Dr = DR_SF9; // downlink SF is fix, because TTN only uses SF9 for its RX2 window
+    LMIC_setDrTxpow(SPREADING_FACTOR, 14);
   #endif
-
-  #if defined(CFG_eu868)
-    LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-    LMIC_setupChannel(1, 868300000, DR_RANGE_MAP(DR_SF12, DR_SF7B), BAND_CENTI);      // g-band
-    LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-    LMIC_setupChannel(3, 867100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-    LMIC_setupChannel(4, 867300000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-    LMIC_setupChannel(5, 867500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-    LMIC_setupChannel(6, 867700000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-    LMIC_setupChannel(7, 867900000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
-    LMIC_setupChannel(8, 868800000, DR_RANGE_MAP(DR_FSK,  DR_FSK),  BAND_MILLI);      // g2-band
-  #elif defined(CFG_us915)
-    // NA-US channels 0-71 are configured automatically
-    // but only one group of 8 should (a subband) should be active
-    // TTN recommends the second sub band, 1 in a zero based count.
-    // https://github.com/TheThingsNetwork/gateway-conf/blob/master/US-global_conf.json
-
-    LMIC_selectSubBand(1);
-  #endif
-
-  LMIC_setLinkCheckMode(0);
-  LMIC.dn2Dr = DR_SF9; // downlink SF is fix, because TTN only uses SF9 for its RX2 window
-  LMIC_setDrTxpow(SPREADING_FACTOR, 14);
 }
 
 void loopLoRa() {

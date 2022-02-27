@@ -1,3 +1,5 @@
+// insert this code into "Payload formatters" for "Uplink" and "Formatter type": Javascript
+
 const SPEED_PER_CLICK = 2.4 // km/h
 const RAIN_PER_CLICK = 0.2794 // mm
 
@@ -55,7 +57,7 @@ function decodeUplink(input) {
       wind_direction: directions[wind_direction_index][1],
       wind_speed: wind_speed.toFixed(2)+ " km/h",
       max_wind_speed: max_wind_speed.toFixed(2) + " km/h",
-      rain_amount: rain_amount + " mm"
+      rain_amount: rain_amount.toFixed(4) + " mm"
     })
   }
   
