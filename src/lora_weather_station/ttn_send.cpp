@@ -50,6 +50,7 @@ const lmic_pinmap lmic_pins = {
 };
 
 void do_send(osjob_t * j) {
+  // Check if there is not a current TX/RX job running
   if (LMIC.opmode & OP_TXRXPEND) {
     Serial.println(F("OP_TXRXPEND, not sending"));
   } 
@@ -120,27 +121,59 @@ void setupLoRa() {
   #endif
 
   #ifdef VCC_ENABLE
+    // For Pinoccio Scout boards
     pinMode(VCC_ENABLE, OUTPUT);
     digitalWrite(VCC_ENABLE, HIGH);
     delay(1000);
   #endif
 
+  // LMIC init
   os_init();
+  // Reset the MAC state. Session and pending data transfers will be discarded.
   LMIC_reset();
 
   #ifdef ABP_MODE
+    // Set static session parameters. Instead of dynamically establishing a session
+    // by joining the network, precomputed session parameters are be provided.
     #ifdef PROGMEM
+      // On AVR, these values are stored in flash and only copied to RAM
+      // once. Copy them to a temporary buffer here, LMIC_setSession will
+      // copy them into a buffer of its own again.
       uint8_t appskey[sizeof(APPSKEY)];
       uint8_t nwkskey[sizeof(NWKSKEY)];
       memcpy_P(appskey, APPSKEY, sizeof(APPSKEY));
       memcpy_P(nwkskey, NWKSKEY, sizeof(NWKSKEY));
       LMIC_setSession(0x1, DEVADDR, nwkskey, appskey);
     #else
+      // If not running an AVR with PROGMEM, just use the arrays directly
       LMIC_setSession(0x1, DEVADDR, NWKSKEY, APPSKEY);
     #endif
   
+    /*
+    NOTE: In our testing the frequencies other than 868100000, 868300000 and 868500000 did not work,
+          the gateway never sent a downlink message in this case.
+          If this is due to the LoRa Shield or the configuration of our own gateway is unclear.
+          In the example code from https://github.com/dragino/arduino-lmic/blob/master/examples/ttn-abp/ttn-abp.ino
+          this section is also commented out.
+          Disabling it defaults to the usage of the 3 aforementioned frequencies
+          which are working without any issue.
+          - You can try to activate the other frequencies by uncommenting this section,
+            available frequencies for TTN: https://www.thethingsnetwork.org/docs/lorawan/frequency-plans/,
+            but keep in mind that in our testing receiving the packet did not work on these.
+          - Also LMIC switches between the frequencies ascending, so if you receive some packets, they were
+            probably send on the aforementioned 3 frequencies.
+
 
     #if defined(CFG_eu868)
+      // Set up the channels used by the Things Network, which corresponds
+      // to the defaults of most gateways. Without this, only three base
+      // channels from the LoRaWAN specification are used, which certainly
+      // works, so it is good for debugging, but can overload those
+      // frequencies, so be sure to configure the full frequency range of
+      // your network here (unless your network autoconfigures them).
+      // Setting up channels should happen after LMIC_setSession, as that
+      // configures the minimal channel set.
+      // NA-US channels 0-71 are configured automatically
       LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
       LMIC_setupChannel(1, 868300000, DR_RANGE_MAP(DR_SF12, DR_SF7B), BAND_CENTI);      // g-band
       LMIC_setupChannel(2, 868500000, DR_RANGE_MAP(DR_SF12, DR_SF7),  BAND_CENTI);      // g-band
@@ -158,9 +191,13 @@ void setupLoRa() {
 
       LMIC_selectSubBand(1);
     #endif
-
+    */
+    
+    // Disable link check validation
     LMIC_setLinkCheckMode(0);
-    LMIC.dn2Dr = DR_SF9; // downlink SF is fix, because TTN only uses SF9 for its RX2 window
+    // downlink SF is fix, because TTN only uses SF9 for its RX2 window
+    LMIC.dn2Dr = DR_SF9; 
+    // Set data rate and transmit power for uplink (note: txpow seems to be ignored by the library)
     LMIC_setDrTxpow(SPREADING_FACTOR, 14);
   #endif
 }
