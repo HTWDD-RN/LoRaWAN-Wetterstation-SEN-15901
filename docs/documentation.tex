@@ -285,7 +285,7 @@
 
 
       \subsubsection{Anemometer}
-        Das Schalenanemometer nimmt Windgeschwindigkeiten auf, indem ein Reed-Schalter durch einen Magneten geschaltet wird.
+        Das Schalen-Anemometer nimmt Windgeschwindigkeiten auf, indem ein Reed-Schalter durch einen Magneten geschaltet wird.
         Je schneller sich das Anemometer dreht, umso größer wird die Schaltfrequenz.
         Eine Windgeschwindigkeit von 2.4 km/h schließt den Schalter mit einer Frequenz von 1 Hz.
 
@@ -391,8 +391,8 @@
 
       \begin{figure}[H]
         \centering
-        \includegraphics[scale=0.12]{Record_Byte_Representation.png}
-        \caption{Aufbau eines Datensatzes}
+        \includegraphics[scale=0.2]{Record_Byte_Representation.png}
+        \caption{Aufbau eines Datensatzes bestehend aus 3 Byte}
       \end{figure}
 
       Die verschiedenen Wertebereiche lassen sich folgendermaßen ableiten:
@@ -416,15 +416,14 @@
 
         \item \textbf{R}: 8 Bit
         
-        Mit 8 Bit stehen dem Regenmesser maximal 255 Schaltvorgänge pro Zeitraum zur Verfügung.
+        Mit 8 Bit stehen dem Regenmesser maximal 255 Schaltvorgänge pro definiertem Zeitraum zur Verfügung.
         Damit kann eine Regenmenge von maximal 71,247 mm pro Zeitraum erreicht werden.
-        Je größer der gewählte Zeitraum ist, umso größer ist auch die resultierende Regenmenge in diesem Zeitraum, da es sich hier um die kumulierte Summe aller Schaltvorgänge handelt.
+        Je größer der gewählte Zeitraum, umso größer ist auch die potenzielle Regenmenge, da es sich hier um die kumulierte Summe aller Schaltvorgänge handelt.
         Daher wird die Wahrscheinlichkeit größer hier ein Maximum an Schaltvorgängen zu erreichen, je größer die gewählte Auflösung ausfällt.
-        
-        Für extreme Regenfälle könnte man auch den Regen um ein weiteres Byte erweitern.
-        Das ist aber für die alltäglichen Regenströme nicht relevant und bläht sonst bloß die Payload-Größe auf.
 
-        
+        Für extreme Regenfälle könnte man auch den Regen um ein ein paar Bits erweitern, was aber zu einem weiteren übertragenem Byte führt
+        und die Payload-Größe aufbläht.
+  
       \end{enumerate}
 
       Übersteigen Regenmenge oder Windgeschwindigkeiten den maximal zugewiesenen Wertebereich, werden die Werte auf das jeweilige Maximum gesetzt.
@@ -437,7 +436,7 @@
 
       \subsubsection{Senden der Daten ans TTN}
       Ist der Cache voll, gibt der Arduino dem LoRa-Shield über die verwendete LMIC-Library die Anweisung alle Daten im Cache zu versenden.
-      Die Art und Weise, wie die Daten über LoRa versendet werden sollen, kann der Nutzer selbst bestimmen und wird im Abschnitt \underline{\ref{sec:Konfiguration}} erklärt. %TODO: Verlinkung
+      Die Art und Weise, wie die Daten über LoRa versendet werden sollen, kann der Nutzer selbst bestimmen und wird im Abschnitt \underline{\ref{sec:Konfiguration}} erklärt.
 
 
     \subsection{TTN}
@@ -457,7 +456,7 @@
         
 
 
-      \subsubsection{Integrations}
+      \subsubsection{Integrations} \label{Integrations}
         Hier gibt es die Möglichkeit Trigger zu erstellen, die Daten verarbeiten und weiterleiten
         (bspw. Webhooks oder Storage Integrations für Up- und Downlink Nachrichten).
         Für eine Auflistung siehe \href{https://www.thethingsnetwork.org/docs/applications-and-integrations/}{Applications \& Integrations}.
@@ -486,7 +485,7 @@
         der optimale Spreading Factor ermittelt.
 
         \textit{Anmerkung:} Um Replay-Angriffe des Join-Verfahrens zu verhindern, wird eine DevNonce vom Endknoten erstellt.
-        Im Optimalfall speichert der Endknoten diese persistent und sendet jedesmal eine noch nicht genutzte Nonce. Der Arduino besitzt jdedoch keinen persistenten Speicher und kann die
+        Im Optimalfall speichert der Endknoten diese persistent und sendet jedes mal eine noch nicht genutzte Nonce. Der Arduino besitzt jdedoch keinen persistenten Speicher und kann die
         bereits genutzten DevNonce nicht einsehen. In neueren MAC Versionen muss eine Nonce jeweils größer als die
         vorige sein, siehe \href{https://www.thethingsnetwork.org/forum/t/devnonce-is-too-small-what-to-do/46330}{DevNonce is too small}.
         Daher nutzen wir eine ältere MAC Version bei der der Server nur prüft ob die DevNonce bereits verwendet wurde.
@@ -525,7 +524,7 @@
 
     \textbf{Vorbedingung:}
     \begin{enumerate}
-      \item Installieren Sie die Arduino IDE und die notwendige \href{https://github.com/dragino/arduino-lmic}{Library} nach \texttt{Installation.md}
+      \item Installieren Sie die Arduino IDE und die notwendige \href{https://github.com/dragino/arduino-lmic}{Library} nach \texttt{Readme.md}
       \item Erstellen Sie einen TTN Account unter \href{www.thethingsnetwork.org}{www.thethingsnetwork.org}
       \item Navigieren Sie zur Console
       \item Wählen Sie \textless Go to applications\textgreater{}
@@ -613,7 +612,7 @@
       \item Formatter type: Javascript
       \item Kopieren Sie den Javascript Code von \texttt{payload\_formatter.js} in das vorgesehene Feld
       \item \textless Save changes\textgreater{}
-      \item Testen Sie den Formatter mit der Payload X %TODO: add payload
+      \item Testen Sie den Formatter mit der Payload \textless CF3FEAFFFFFF\textgreater{}
       \item Starten Sie den Arduino. Falls ein Gateway in Reichweite ist, sollten die Daten nach einiger
         Zeit im Tab \textless Live data\textgreater{} erscheinen
     \end{enumerate}
@@ -637,20 +636,46 @@
         Wenn wir die zusätzlichen Frequenzen hier freischalten, sendet das Gateway bei Paketen die nicht auf den 3 oben genannten Frequenzen gesendet wurden, keine Downlink Nachricht
         und quittiert dem Endknoten das Paket nicht.
 
+  \newpage
 
+  \section{Mögliche Erweiterungen}
+
+    \subsection{Steuerung vom TTN aus}
+      Zurzeit muss der Nutzer, wenn er die Konfiguration der Anwendung ändern will, den Arduino jedes mal neu beschreiben.
+      Das kann umständlich sein, wenn sich die Wetterstation an einem isolierten Ort befindet.
+      Durch die Nutzung der Downlink-Funktion des TTN ist ein komfortables Steuern der Parameter einfach aus der Ferne möglich.
+
+    \subsection{Daten aus TTN exportieren}
+      Wie in Abschnitt \underline{\fullref{Integrations}} bereits erläutert,
+      gibt es verschiedene Möglichkeiten bei Ankunft eines Pakets, Aktionen auszulösen.
+      Um langfristige Auswertungen zu ermöglichen, könnten die empfangenen Messwerte in eine Datenbank geschrieben werden.
+      Weiterhin wäre vorstellbar, den aktuellsten Messwert weiterzuleiten und auf einer Webseite einzubinden.
+
+    \subsection{Weitere Sensoren}
+      Die Grundstruktur der Anwendung erlaubt eine Integration weiterer Sensoren.
+      Denkbar wären Licht-, Feuchtigkeits-, Luftdruck oder Temperatursensoren.
+
+  \newpage
         
   \section{Fazit}
-    \begin{itemize}
-      \item für beide sehr interessant
-      \item noch nie mit Arduino gearbeitet und wenig Mikrocontroller Erfahrung
-      \item auch noch nie LoRa, ins Kalte Wasser geschmissen
-      \item schwierige Programmierung mit Geräten die nicht häufig in der Community zumindest TTN genutzt werden
-      \item Änderung auf TTNv3 hat es auch nicht besser gemacht
-      \item viele Libraries, die aber alle nicht funktioniert haben, erst über Tipp der anderen Gruppe von angepasster Dragin Library erfahren
-      \item Debugging ist schwierig bis unmöglich ohne eigenes Gateway, wahrscheinlich am Sinnvollsten einen RaspberryPI dafür zu nutzen
-      \item 
-    \end{itemize}
+    Zu Ende des Projekts steht eine funktionierende LoRa-Wetterstation.
+    Der Arduino misst die 3 Sensoren fortlaufend aus und kann, sobald sich ein Gateway in Reichweite befindet, diese Daten an das TTN übermitteln.
+    Art und Umfang der Übermittlung ist vom Nutzer selbst konfigurierbar, ohne die Anwendung umschreiben zu müssen.
     
-  
+    Das System kann in der Praxis durchaus eingesetzt werden.
+    Es bietet (bei bestehender LoRa-Infrastruktur) eine kostengünstige und energieeffiziente Lösung, um Wetterdaten zu kommunizieren.
+    Das Projekt eignet sich am besten für einen Anwendungsfall mit relativ wenigen benötigten Messwerten in einer isolierten Umgebung.
+    
+    In einer sonst vernetzten Umgebung mit dem Anspruch auf hochfrequente Abfrage von Messwerten, ist das Projekt nicht geeignet.
+    Um die Wetterstation trotzdem mit dem Arduino auch ohne LoRa nutzen zu können, lässt sich die \texttt{local\_weather\_station.ino} als Grundlage nutzen.
+
+    Für Entwickler und Bastler, die sich für LoRa interessieren und nicht die offiziell empfohlene Hardware verwenden, ist die Einstiegshürde sehr groß.
+    Besonders, da der Standard relativ neu ist und stetig weiterentwickelt wird, fehlen Inhalte und Anleitungen oder sind nicht mehr aktuell.
+
+    Uns persönlich hat die Arbeit sehr viel Spaß gemacht, auch wenn es oft nicht leicht war passende Artikel und Code-Beispiele zu finden.
+    Darüber hinaus hatten wir zuvor noch nicht mit Arduino und LoRa gearbeitet.
+
+    Es war interessant zu sehen, wie wir eine rein analoge Wetterstation digitalisiert haben und einem Netzwerk wie TTN hinzufügen konnten.
+    Wir sind sehr zufrieden und stolz auf das Ergebnis.
 
 \end{document}
