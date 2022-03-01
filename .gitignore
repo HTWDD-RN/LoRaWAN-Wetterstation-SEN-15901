@@ -8,7 +8,5 @@
 *.fls
 *.fdb_latexmk
 
-*.pdf
-
 secret.h
 gps/
