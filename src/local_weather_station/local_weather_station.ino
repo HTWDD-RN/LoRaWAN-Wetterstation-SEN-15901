@@ -1,5 +1,6 @@
 #include <string.h>
 
+
 #define SPEED_PER_CLICK 2.4     //km/h
 #define RAIN_PER_CLICK  0.2794  //mm - 1.54 ml water
 // 1mm - 5.5 ml
@@ -37,13 +38,13 @@ windDirection directions[] = {
 };
 
 volatile bool speedRead = false;
-volatile int speedCount = 0;
-volatile int rainCount = 0;      // variable to store the read value - volatile to push the update through
+volatile int rawWindSpeedValue = 0;
+volatile int rawRainValue = 0;      // variable to store the read value - volatile to push the update through
 
 // variables that should be set once per second thus during packet creation / serial print we will not use changing values
 volatile bool valuesRead = false;
-volatile int speedCountSec = 0;
-volatile int rainCountSec = 0;
+volatile int currentWindSpeedvalue = 0;
+volatile int currentRainValue = 0;
 
 unsigned int counterStart = 3036;
 
@@ -110,9 +111,9 @@ void loop() {
     Serial.print(" °, ");
     Serial.print(directions[directionIndex].direction);
     Serial.print(" ; Speed: ");
-    Serial.print(speedCountSec * SPEED_PER_CLICK);
+    Serial.print(currentWindSpeedvalue * SPEED_PER_CLICK);
     Serial.print("km/h ; Rain: ");
-    Serial.print(rainCountSec * RAIN_PER_CLICK);
+    Serial.print(currentRainValue * RAIN_PER_CLICK);
     Serial.println("mm");
     
     // Serial.print("PIND: ");
@@ -132,14 +133,14 @@ ISR (TIMER1_OVF_vect) {
   TCNT1 = counterStart; // adjust register value for 1 second overflow
 
   // read current values into Sec variables for asyn output in loop
-  rainCountSec = rainCount;
-  speedCountSec = speedCount;
+  currentRainValue = rawRainValue;
+  currentWindSpeedvalue = rawWindSpeedValue;
 
   // reset
   // lost update is possible, if the pin change interrupt interrupt this interrupt (pin change has higher priority)
   // thus some counts may get lost, however the reset  itself cannot be lost - lower priority - which is what we want
-  rainCount = 0;
-  speedCount = 0;
+  rawRainValue = 0;
+  rawWindSpeedValue = 0;
   
   valuesRead = true;  //enable loop to enter
 }
@@ -159,7 +160,7 @@ ISR (PCINT2_vect) {
   // Serial.println((PIND & (1 << RAIN_PIN)) == 0, BIN);
 
   // if the switch in anemometer remains in closed position, the D4 pin is always high (anemometer does not move)
-  // problem: if the rain sensor is triggered, while D4 (speed pin) is constantly high, speedCount and rainCount would be incremented, but anemometer did not move
+  // problem: if the rain sensor is triggered, while D4 (speed pin) is constantly high, rawWindSpeedValue and rawRainValue would be incremented, but anemometer did not move
   // solution: after the anemometer triggered an interrupt, lock the ISR for speed updates, until the pin state changes to low
   // then, unlock the ISR for speed updates, when the pin state changes to high
 
@@ -173,7 +174,7 @@ ISR (PCINT2_vect) {
 
     //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
     if (interrupt_time_speed - last_interrupt_time_speed > 10) {  //min time between readings - TODO maybe change value
-      speedCount++;
+      rawWindSpeedValue++;
       last_interrupt_time_speed = interrupt_time_speed;
     }
 
@@ -186,7 +187,7 @@ ISR (PCINT2_vect) {
 
     //implement software debouncer as we can easily configure the time and HW-Debouncing did not work for us
     if (interrupt_time_rain - last_interrupt_time_rain > 100) { // max 27 clicks per 10 seconds => 370 ms between readings
-      rainCount++;
+      rawRainValue++;
       last_interrupt_time_rain = interrupt_time_rain;
     }
   }
