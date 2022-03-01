@@ -145,7 +145,7 @@ ISR (TIMER1_OVF_vect) {
 }
 
 
-// handle digital interrupts (rain meter and anemometer)
+// handle digital interrupts (rain gauge and anemometer)
 ISR (PCINT2_vect) {
 
   // Serial.print("PIND: ");
