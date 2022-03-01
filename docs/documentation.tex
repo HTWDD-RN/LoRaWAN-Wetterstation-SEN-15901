@@ -40,7 +40,7 @@
   
       \huge
   
-      \textbf{LoRaWAN Wetterstation}
+      \textbf{LoRaWAN Wetterstation SEN-15901}
   
       \LARGE
   
@@ -260,10 +260,10 @@
         die Operation nicht durchgeführt wird. Um das zu umgehen kann mit jedem gesendeten Paket der EEPROM beschrieben werden. Dann ist dieser nach
         spätestens 100,000 Paketen nicht mehr beschreibbar, was abhängig vom Sendeinterval schnell sein kann.
 
-        Daher empfehlen wir unbedingt OTAA. Sollte man dennoch ABP nutzen wollen, so lässt sich in der TTN Console die Frame Counter Überprüfung deaktivieren,
-        wie gezeigt in \underline{\fullref{subsec:ABP-Konfiguration}}, wodurch Replay Attacken nicht mehr verhindert werden.
+        Daher empfehlen wir unbedingt OTAA. Soll dennoch ABP genutzt werden, so lässt sich in der TTN Console die Frame Counter Überprüfung deaktivieren,
+        wie gezeigt in \underline{\fullref{subsec:ABP - Konfiguration}}, wodurch Replay Attacken nicht mehr verhindert werden.
 
-        %TODO: Problem mit Frequenzen ansprechen
+        Weiterhin gibt es noch ein Problem mit den nutzbaren Frequenzen, siehe \underline{\fullref{subsec:ABP - Frequenzbereich}}, was aber OTAA nicht betrifft.
 
     \subsection{Sensoren der Wetterstation}
 
@@ -384,7 +384,7 @@
 
 
 
-    \subsection{OTAA-Konfiguration}
+    \subsection{OTAA - Konfiguration}
       \begin{enumerate}
         \setcounter{enumi}{9}
         \item DevEUI: Generate
@@ -408,7 +408,7 @@
 
 
 
-    \subsection{ABP-Konfiguration} \label{subsec:ABP-Konfiguration}
+    \subsection{ABP - Konfiguration} \label{subsec:ABP - Konfiguration}
       \begin{enumerate}
         \setcounter{enumi}{9}
         \item \textless Show advanced activation, LoRaWAN class and cluster settings \textgreater{}
@@ -439,19 +439,6 @@
 
 
 
-    \subsection{Payload Formatter setzen} \label{subsec:Payload Formatter setzen}
-      \begin{enumerate}
-        \item Wählen Sie den \textless Payload formatters\textgreater{} Tab
-        \item Uplink ist standärdmäßig ausgewählt
-        \item Formatter type: Javascript
-        \item Kopieren Sie den Javascript Code von \texttt{payload\_formatter.js} in das vorgesehene Feld
-        \item \textless Save changes\textgreater{}
-        \item Testen Sie den Formatter mit der Payload X %TODO: add payload
-        \item Starten Sie den Arduino. Falls ein Gateway in Reichweite ist, sollten die Daten nach einiger
-          Zeit im Tab \textless Live data\textgreater{} erscheinen
-      \end{enumerate}
-
-
     \subsection{ADR deaktivieren} \label{subsec:ADR deaktivieren}
       \begin{enumerate}
         \item Wechseln Sie in den \textless General settings\textgreater{} Tab im TTN
@@ -461,6 +448,40 @@
         \item \textless Save changes\textgreater{}
       \end{enumerate}
 
-  \section{Probleme}
 
+    
+    \subsection{Payload Formatter setzen} \label{subsec:Payload Formatter setzen}
+    \begin{enumerate}
+      \item Wählen Sie den \textless Payload formatters\textgreater{} Tab
+      \item Uplink ist standärdmäßig ausgewählt
+      \item Formatter type: Javascript
+      \item Kopieren Sie den Javascript Code von \texttt{payload\_formatter.js} in das vorgesehene Feld
+      \item \textless Save changes\textgreater{}
+      \item Testen Sie den Formatter mit der Payload X %TODO: add payload
+      \item Starten Sie den Arduino. Falls ein Gateway in Reichweite ist, sollten die Daten nach einiger
+        Zeit im Tab \textless Live data\textgreater{} erscheinen
+    \end{enumerate}
+
+  \section{Limitierungen}
+
+      \subsection{ABP - Frequenzbereich} \label{subsec:ABP - Frequenzbereich}
+        In Europa ist der Downlink Frequenzbereich 868.1 - 868.8MHz.
+        Die Anwendung wechselt dabei automatisch zwischen den Kanälen um eine gleichmäßige Auslastung zu erzielen.
+
+        Bei OTAA werden die nutzbaren Frequenzen beim Join-Verfahren vom Netzwerk übertragen.
+        Weil ABP kein Join-Verfahren nutzt müssen diese vordefiniert werden.
+
+        Wenn das Programm im ABP Modus läuft, funktionieren nur die Frequenzen: 868.1, 868.3, 868.5MHz.
+        Wahrscheinlich setzen wir die zusätzlichen Frequenzen nicht korrekt.
+        Im \href{https://github.com/dragino/arduino-lmic/blob/f2775468e19b2c2a35557ef2f8255cffb2a783be/examples/ttn-abp/ttn-abp.ino#L180}{Codebeispiel der Library}
+        wurden diese leider deaktiviert.
+
+        Wenn wir die zusätlzichen Frequenzen hier freischalten, sendet das Gateway bei Paketen die nicht auf den 3 oben genannten Frequenzen gesendet wurden, keine Downlink Nachricht
+        und quittiert dem Endknoten das Paket nicht.
+
+      
+
+      \subsection{Regenmenge}
+        Ursprünglich Zeit gehardcoded %TODO:
+        
 \end{document}
