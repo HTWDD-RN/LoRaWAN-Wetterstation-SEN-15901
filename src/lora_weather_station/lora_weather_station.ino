@@ -124,12 +124,6 @@ void loop() {
       /* [WV] [..AN..][.M_AN]  [...R...] */ // value allocation
       // WV = windVaneDirectionIndex, R = rainAmount, AN = avgWindSpeed, M_AN = maxWindSpeed
 
-      //TODO: remove this
-      maxDirectionIndex = 12;
-      avgWindSpeedValue = 60;
-      maxWindSpeedValue = 63;
-      rainAmount = 234;
-
       // add current record to cache
       cache[recordCount] = maxDirectionIndex << 4;
       cache[recordCount] |= (avgWindSpeedValue >> 2) & 0x0F;
