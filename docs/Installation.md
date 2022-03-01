@@ -20,19 +20,42 @@
 
 2. In der Arduino-IDE: Sketch -> Bibliothek einbinden -> .ZIP-Bibliothek hinzufügen
 
+3. Die Frequenz anpassen: https://github.com/dragino/arduino-lmic#configuration
+3.1 the frequency must be set in the lmic libraries config file in 'home/Arduino/libraries/arduino-lmic-master/src/lmic/config.h'
+
+
 
 ## TTN
+### OTAA
 1. Add application
 2. Add end device
 2.1 Manually
 2.1.1 Frequency Plan: Europe 863-870 MHz (SF9 for RX2 - recommended)
 2.1.2 LoRaWan version: MAC V1.0.2
-2.1.3 Regional Parameters version: PHY V1.1 REV A
+2.1.3 Regional Parameters version: PHY V1.0.2 REV A
+2.1.4 DeEUI, AppEUI, AppKey generieren und in Code einfügen (lsb beachten)
+2.1.5 Register end device
+### ABP
+1. Add application
+2. Add end device
+2.1 Manually
+2.1.1 Frequency Plan: Europe 863-870 MHz (SF9 for RX2 - recommended)
+2.1.2 LoRaWan version: MAC V1.0.2
+2.1.3 Regional Parameters version: PHY V1.0.2 REV A
 2.1.4 Show advanced activation !
 2.1.5 Activation mode: Activation by personalization (ABP)
 2.1.6 Device address, AppSKey, NwkSKey generieren und in Code einfügen
 2.1.7 Register end device
-
+2.1.8 Frame Counter deaktivieren
+2.1.9 In den General settings Tab wechseln
+2.1.10 unter Network Layer -> Expand
+2.1.11 unten Advanced MAC settings
+2.1.12 das Häckchen in Resets frame counters setzen
+### ADR deaktivieren
+2.1.9 In den General settings Tab wechseln
+2.1.10 unter Network Layer -> Expand
+2.1.11 unten Advanced MAC settings
+2.1.12 das Häckchen in Use adaptive data rate (ADR) entfernen
 
 ## VSCode Extension
 

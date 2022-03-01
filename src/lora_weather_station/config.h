@@ -19,7 +19,7 @@
  * According to TTN fair use policy an average of 30 seconds per 24 hours should be maintained.
  *
  * NOTE: The more records a packet contains the more efficient is the data-to-airtime ratio, since the LoRaWan overhead is static
- * NOTE: Please ensure that you send packages to TTN at least a few minutes apart, otherwise the network might ignore them
+ * NOTE: Please ensure that you comply with regional and TTN regulations: https://www.thethingsnetwork.org/docs/lorawan/duty-cycle/
 */
 
 
