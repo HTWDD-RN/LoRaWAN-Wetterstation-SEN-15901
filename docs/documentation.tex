@@ -404,26 +404,30 @@
         Übergeben wird nur der Index des sortierten Arrays der Spannungswerte (siehe \underline{\ref{processing_records}}), daher kommen hier nur Werte von 0 bis 15 zustande.
         Diese 16 Werte lassen sich exakt auf 4 Bit verteilen.
 
-        \item \textbf{R}: 5 Bit
+        \item \textbf{AN}: 6 Bit
         
-        Mit 5 Bit stehen dem Regenmesser maximal 32 Schaltvorgänge pro Zeitraum zur Verfügung.
-        Durch mehrere Tests hat sich ergeben, dass der Regenmesser innerhalb von 10 Sekunden maximal 27 Schaltvorgänge auslöst.
-        Das entspricht etwa einer Regenmenge von 50 mm.
-        Bei einer gewählten Auflösung größer als 10 Sekunden und stärkerem Regen kann mitunter kein exakter Wert mehr übermittelt werden.
-        Die vorgesehene Größe von 5 Bit reicht dazu nicht aus.
-        Mögliche Lösungsvorschläge für größere Zeiträume werden im Abschnitt \ref{limits} beleuchtet. %TODO: umändern
+        Die durchschnittliche Windgeschwindigkeit im betrachteten Zeitraum darf maximal 63 Schaltvorgänge auslösen.
+        Das entspricht einer maximalen durchschnittlichen Windgeschwindigkeit von etwa 150 km/h.
 
-        \item \textbf{AN}: 7 Bit %TODO: 6 Bit
+        \item \textbf{M\_AN}: 6 Bit
         
-        Die durchschnittliche Windgeschwindigkeit im betrachteten Zeitraum darf maximal 128 Schaltvorgänge auslösen.
-        Das entspricht einer Windgeschwindigkeit von etwa 300 km/h.
-        Solche Geschwindigkeiten werden höchstens in Ausnahmefällen erreicht und sind zudem für die durchschnittliche Geschwindigkeit äußerst unwahrscheinlich.
+        Die maximale Windgeschwindigkeit im betrachteten Zeitraum darf maximal 63 Schaltvorgänge auslösen.
+        Das entspricht ebenfalls einer maximalen Windgeschwindigkeit von etwa 150 km/h.
 
-        \item \textbf{M\_AN}: 7 Bit %TODO: 6 Bit
+        \item \textbf{R}: 8 Bit
         
-        Die maximale Windgeschwindigkeit im betrachteten Zeitraum darf maximal 128 Schaltvorgänge auslösen.
-        Das entspricht ebenfalls einer Windgeschwindigkeit von etwa 300 km/h.
+        Mit 8 Bit stehen dem Regenmesser maximal 255 Schaltvorgänge pro Zeitraum zur Verfügung.
+        Damit kann eine Regenmenge von maximal 71,247 mm pro Zeitraum erreicht werden.
+        Je größer der gewählte Zeitraum ist, umso größer ist auch die resultierende Regenmenge in diesem Zeitraum, da es sich hier um die kumulierte Summe aller Schaltvorgänge handelt.
+        Daher wird die Wahrscheinlichkeit größer hier ein Maximum an Schaltvorgängen zu erreichen, je größer die gewählte Auflösung ausfällt.
+        
+        Für extreme Regenfälle könnte man auch den Regen um ein weiteres Byte erweitern.
+        Das ist aber für die alltäglichen Regenströme nicht relevant und bläht sonst bloß die Payload-Größe auf.
+
+        
       \end{enumerate}
+
+      Übersteigen Regenmenge oder Windgeschwindigkeiten den maximal zugewiesenen Wertebereich, werden die Werte auf das jeweilige Maximum gesetzt.
 
       Je nach dem, wie viele Datensätze in einem Paket versendet werden sollen, werden die Datensätze in einem Cache zwischengespeichert.
       Ist der Cache voll, werden die Daten als ein Paket versendet.
