@@ -124,6 +124,12 @@ void loop() {
       /* [WV] [..AN..][.M_AN]  [...R...] */ // value allocation
       // WV = windVaneDirectionIndex, R = rainAmount, AN = avgWindSpeed, M_AN = maxWindSpeed
 
+      // check if the wind speed and rain amount values exceed the intended bit space
+      // if yes, set them on the available maximum
+      if (avgWindSpeedValue > 0x3F) avgWindSpeedValue = 0x3F; 
+      if (maxWindSpeedValue > 0x3F) maxWindSpeedValue = 0x3F;
+      if (rainAmount > 0xFF) rainAmount = 0xFF;
+
       // add current record to cache
       cache[recordCount] = maxDirectionIndex << 4;
       cache[recordCount] |= (avgWindSpeedValue >> 2) & 0x0F;
