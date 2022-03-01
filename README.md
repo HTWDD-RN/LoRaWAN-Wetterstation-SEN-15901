@@ -20,8 +20,8 @@ LoRaWAN-Wetterstation-SEN-15901
 │   ├── documentation.tex               Projektdokumentation LaTeX-Quelldatei
 │   ├── img                             enthält Bilder für die Dokumentation
 │   │   └── *
-│   ├── Links.md                        Linksammlung (Wetterstation, Arduino)
-│   └── Schaltplan.fzz                  Fritzing Schaltplan der Anwendung
+│   ├── links.md                        Linksammlung (Wetterstation, Arduino)
+│   └── schaltplan.fzz                  Fritzing Schaltplan der Anwendung
 ├── README.md                           
 └── src         
     ├── local_weather_station           Implementation ohne LoRa
