@@ -9,6 +9,7 @@
 \usepackage{float}
 \usepackage{subfigure}
 \usepackage{xcolor}
+\usepackage{listings}
 
 \usepackage[unicode]{hyperref}
 \graphicspath{ {./img/} }
@@ -96,7 +97,7 @@
 
 
   \section{Einleitung}
-    Das Projekt wurde im Laufe des Projektseminars 2021 von Lenny Reitz und Raphael Rezaii-Djafari unter der Führung von
+    Die Anwendung wurde im Laufe des Projektseminars 2021 von Lenny Reitz und Raphael Rezaii-Djafari unter der Führung von
     Professor Jörg Vogt an der HTW Dresden entwickelt.
 
 
@@ -342,7 +343,7 @@
 
 
       \subsubsection{Erfassung der Messwerte}
-      Über Interrupts (siehe \href{https://github.com/HTWDD-RN/ps21-LoRa/blob/9c012bc1d41e960b6edf9e756e8948e387f28c83/src/lora_weather_station/lora_weather_station.ino#L170}{Code-Ausschnitt}), die beim Zustandswechsel der digitalen Pins ausgelöst werden, kann die Anzahl der Schaltvorgänge in einfachen Variablen (Counter) inkrementell erfasst werden.
+      Über Interrupts (siehe \href{https://github.com/HTWDD-RN/LoRaWAN-Wetterstation-SEN-15901/blob/21bf650ae923dba30d39e37641f77aa94702a314/src/lora_weather_station/lora_weather_station.ino#L176}{Code-Ausschnitt}), die beim Zustandswechsel der digitalen Pins ausgelöst werden, kann die Anzahl der Schaltvorgänge in einfachen Variablen (Counter) inkrementell erfasst werden.
       Der Arduino berechnet jede Sekunde einen neuen Messwert, daher werden diese Counter für Regenmesser und Anemometer jede Sekunde zurückgesetzt.
       Beide Sensoren werden außerdem zeitlich entprellt, sodass nur einmal pro Schaltvorgang inkrementiert wird.
       Das Zeitfenster, in dem die Sensoren entprellt werden, ist auf die technischen Eigenschaften der Sensoren abgestimmt, d.h. die Entprellung ist nicht so stark, dass im Zweifel Messwerte verloren gehen könnten.
@@ -363,7 +364,7 @@
 
       Um die Zuordnung der Spannungswerte immer gewährleisten zu können, verwendet man ein sortiertes Array der Spannungswerte (beginnend mit dem kleinsten Wert).
       Mit einem ungenau gemessenem Spannungswert kann somit einfach durch die sortierte Liste iteriert werden und an genau dem Wert im Array gestoppt werden, der dem aktuell gemessenen am nächsten kommt.
-      (siehe \href{https://github.com/HTWDD-RN/ps21-LoRa/blob/9c012bc1d41e960b6edf9e756e8948e387f28c83/src/lora_weather_station/lora_weather_station.ino#L87}{Code-Ausschnitt})
+      (siehe \href{https://github.com/HTWDD-RN/LoRaWAN-Wetterstation-SEN-15901/blob/21bf650ae923dba30d39e37641f77aa94702a314/src/lora_weather_station/lora_weather_station.ino#L87}{Code-Ausschnitt})
       
 
 
@@ -387,7 +388,7 @@
         \item die im betrachteten Zeitraum höchste Anzahl an Schaltvorgängen des \textbf{Anemometers} [M\_AN]
       \end{enumerate}
 
-      Diese Werte eines Datensatzes werden im Anschluss auf 3 Byte verteilt (siehe \href{https://github.com/HTWDD-RN/ps21-LoRa/blob/9c012bc1d41e960b6edf9e756e8948e387f28c83/src/lora_weather_station/lora_weather_station.ino#L120}{Code-Ausschnitt}):
+      Diese Werte eines Datensatzes werden im Anschluss auf 3 Byte verteilt (siehe \href{https://github.com/HTWDD-RN/LoRaWAN-Wetterstation-SEN-15901/blob/21bf650ae923dba30d39e37641f77aa94702a314/src/lora_weather_station/lora_weather_station.ino#L120}{Code-Ausschnitt}):
 
       \begin{figure}[H]
         \centering
@@ -430,7 +431,7 @@
 
       Je nach dem, wie viele Datensätze in einem Paket versendet werden sollen, werden die Datensätze in einem Cache zwischengespeichert.
       Ist der Cache voll, werden die Daten als ein Paket versendet.
-      Der Cache wird im Anschluss geleert und kann nun wieder neu befüllt werden (siehe \href{https://github.com/HTWDD-RN/ps21-LoRa/blob/9c012bc1d41e960b6edf9e756e8948e387f28c83/src/lora_weather_station/lora_weather_station.ino#L154}{Code-Ausschnitt}).
+      Der Cache wird im Anschluss geleert und kann nun wieder neu befüllt werden (siehe \href{https://github.com/HTWDD-RN/LoRaWAN-Wetterstation-SEN-15901/blob/21bf650ae923dba30d39e37641f77aa94702a314/src/lora_weather_station/lora_weather_station.ino#L160}{Code-Ausschnitt}).
 
 
 
@@ -453,8 +454,20 @@
         (siehe dazu auch \href{https://www.thethingsnetwork.org/docs/devices/bytes/}{Working with Bytes}).
         Damit TTN die Payload (definiert in \underline{\ref{cache}}) interpretieren kann, müssen wir einen Payload Formatter setzen,
         wie in \underline{\ref{subsec:Payload Formatter setzen}} beschrieben.
-        
 
+        Der allgemeine Aufbau der Ausgabe des Payload Formatters für unsere Anwendung sieht folgendermaßen aus:
+
+        \begin{lstlisting}
+  "decoded_payload": {
+    "0": {
+      "max_wind_speed": "0.00 km/h",
+      "rain_amount": "0.0000 mm",
+      "wind_direction": "N",
+      "wind_speed": "0.00 km/h"
+    },
+    "1": {...}
+  },
+        \end{lstlisting}
 
       \subsubsection{Integrations} \label{Integrations}
         Hier gibt es die Möglichkeit Trigger zu erstellen, die Daten verarbeiten und weiterleiten

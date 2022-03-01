@@ -50,7 +50,7 @@ Außerdem muss ein TTN-Account angelegt werden.
 
 ## Installation 
 
-<details open>
+<details closed>
 
 ### Arduino IDE
 
@@ -164,6 +164,10 @@ sudo apt install texlive texlive-lang-german texlive-latex-extra latexmk
 
 </details>
 
+## Konfiguration der Parameter
+
+Für eine Beispielkonfiguration betrachten Sie bitte das Beispiel und die Erklärungen in [config.h](https://github.com/HTWDD-RN/LoRaWAN-Wetterstation-SEN-15901/blob/main/src/lora_weather_station/config.h)
+
 ## Ausführung
 
 1. TTN End Device erstellen (entweder OTAA oder ABP)
@@ -179,6 +183,21 @@ sudo apt install texlive texlive-lang-german texlive-latex-extra latexmk
 8. Die Datei `lora_weather_station.ino` öffnen
 9. Die Anwendung auf den Arduino Uno schreiben
 10. Zum TTN End Device wechseln und auf Pakete warten
+## Ausgabeformat
+
+Der Payload Formatter in [payload_formatter.js](https://github.com/HTWDD-RN/LoRaWAN-Wetterstation-SEN-15901/blob/main/src/lora_weather_station/payload_formatter.js) muss ins TTN eingepflegt werden und gibt JSON-Objekte nach folgendem Schema aus:
+
+```json
+  "decoded_payload": {
+    "0": {
+      "max_wind_speed": "0.00 km/h",
+      "rain_amount": "0.0000 mm",
+      "wind_direction": "N",
+      "wind_speed": "0.00 km/h"
+    },
+    "1": {...},
+  }
+```
 
 ## TODO
 * Bilder in Aktion hinzufügen
