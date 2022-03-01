@@ -150,9 +150,10 @@ void setupLoRa() {
     #endif
   
     /*
-    NOTE: In our testing the frequencies other than 868100000, 868300000 and 868500000 did not work,
+    NOTE: In our testing the frequencies other than 868100000, 868300000 and 868500000 did not work with ABP,
           the gateway never sent a downlink message in this case.
-          If this is due to the LoRa Shield or the configuration of our own gateway is unclear.
+          In OTAA they work!
+          Either we defined them wrong or the library is buggy, either way just use OTAA.
           In the example code from https://github.com/dragino/arduino-lmic/blob/master/examples/ttn-abp/ttn-abp.ino
           this section is also commented out.
           Disabling it defaults to the usage of the 3 aforementioned frequencies
