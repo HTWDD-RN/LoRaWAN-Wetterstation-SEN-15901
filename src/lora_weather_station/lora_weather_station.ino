@@ -121,17 +121,23 @@ void loop() {
 
       /* [      0]  [      1]  [      2] */ // byte count
       /* 0000 0000  0000 0000  0000 0000 */ // bit count
-      /* [WV] [..R..][..AN..]  0[.M_AN.] */ // value allocation
+      /* [WV] [..AN..][.M_AN]  [...R...] */ // value allocation
       // WV = windVaneDirectionIndex, R = rainAmount, AN = avgWindSpeed, M_AN = maxWindSpeed
 
+      //TODO: remove this
+      maxDirectionIndex = 12;
+      avgWindSpeedValue = 60;
+      maxWindSpeedValue = 63;
+      rainAmount = 234;
+
       // add current record to cache
-      cache[recordCount] |= maxDirectionIndex << 4;
-      cache[recordCount] |= rainAmount >> 1;
+      cache[recordCount] = maxDirectionIndex << 4;
+      cache[recordCount] |= (avgWindSpeedValue >> 2) & 0x0F;
 
-      cache[recordCount + 1] |= rainAmount << 7;
-      cache[recordCount + 1] |= avgWindSpeedValue;
+      cache[recordCount + 1] = avgWindSpeedValue << 6;
+      cache[recordCount + 1] |= maxWindSpeedValue & 0x3F;
 
-      cache[recordCount + 2] |= maxWindSpeedValue;
+      cache[recordCount + 2] = rainAmount;
 
       // reset
       avgWindSpeedValue = 0;

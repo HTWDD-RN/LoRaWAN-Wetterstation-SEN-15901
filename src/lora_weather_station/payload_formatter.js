@@ -32,20 +32,21 @@ function decodeUplink(input) {
     // payload representation
     /* [      0]  [      1]  [      2] */ // byte count
     /* 0000 0000  0000 0000  0000 0000 */ // bit count
-    /* [WV] [..R..][..AN..]  0[.M_AN.] */ // value allocation
+    /* [WV] [..AN..][.M_AN]  [...R...] */ // value allocation
     // WV = windVaneDirectionIndex, R = rainAmount, AN = avgWindSpeed, M_AN = maxWindSpeed
+
 
     // byte 0
     wind_direction_index = input.bytes[i] >> 4
-    rain_amount = (input.bytes[i] << 1) & 0x1E
-    
+    wind_speed = (input.bytes[i] << 2) & 0x3F
+
     // byte 1
-    rain_amount |= input.bytes[i + 1] >> 7
-    wind_speed = input.bytes[i + 1] & 0x7F
-    
+    wind_speed |= input.bytes[i + 1] >> 6
+    max_wind_speed = input.bytes[i + 1] & 0x3F
+
     // byte 2
-    max_wind_speed = input.bytes[i + 2] & 0x7F
-    
+    rain_amount = input.bytes[i + 2]
+
     
     /* format data */
     wind_speed *= SPEED_PER_CLICK
