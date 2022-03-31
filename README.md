@@ -1,8 +1,13 @@
 # LoRaWAN Wetterstation SEN-15901
+
 ## Motivation
+
 >Die analoge Wetterstation SEN-15901 soll mithilfe eines Arduino Uno Daten über LoRa versenden und im The Things Network (TTN) ausgewertet werden.
 >
 >Die Anwendung entstand im Rahmen des Projektseminars 2021/22 bei Prof. Dr. Jörg Vogt an der HTW-Dresden.
+
+![Aufbau der Wetterstation](img-setup/weatherstation-complete.jpg)
+![Aufbau des Arduino](img-setup/arduino_wiring_1.jpg)
 
 ## [Dokumentation](https://github.com/HTWDD-RN/LoRaWAN-Wetterstation-SEN-15901/blob/main/docs/documentation.pdf)
 
